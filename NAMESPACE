@@ -1,0 +1,7 @@
+useDynLib(rcdpp, .registration=TRUE)
+
+
+export(rdppC, rdppEigC, computeEigen)
+
+import(Rcpp, methods)
+import(spatstat)

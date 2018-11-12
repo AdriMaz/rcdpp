@@ -1,0 +1,27 @@
+#ifndef RCPP_RCDPP_MODULE_H
+#define RCPP_RCDPP_MODULE_H
+
+#include "rcdpp_Sim.h"
+
+RCPP_EXPOSED_AS(dpp_All)
+RCPP_EXPOSED_WRAP(dpp_All)
+
+RCPP_EXPOSED_AS(dpp_Prod)
+RCPP_EXPOSED_WRAP(dpp_Prod)
+
+RCPP_EXPOSED_AS(dpp_Gauss)
+RCPP_EXPOSED_WRAP(dpp_Gauss)
+
+RCPP_EXPOSED_AS(dpp_L1Gauss)
+RCPP_EXPOSED_WRAP(dpp_L1Gauss)
+
+RCPP_EXPOSED_AS(dpp_MR)
+RCPP_EXPOSED_WRAP(dpp_MR)
+
+RCPP_EXPOSED_AS(dpp_MRProd)
+RCPP_EXPOSED_WRAP(dpp_MRProd)
+
+RCPP_EXPOSED_AS(dpp_Eig)
+RCPP_EXPOSED_WRAP(dpp_Eig)
+
+#endif
