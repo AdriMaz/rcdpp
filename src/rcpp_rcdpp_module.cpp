@@ -23,20 +23,27 @@ RCPP_MODULE(rcdpp_module) {
     // .method("eigen", &dppGauss::computeEigen, "Compute Eigenvalues.")
   ;
 
-  class_<dpp_L1Gauss>("dppL1Gauss")
+  class_<dpp_L1Exp>("dppL1Exp")
     .derives<dpp_Prod>("dppProd")
     .constructor<List>()
   ;
 
-  class_<dpp_MR>("dppMR")
+  // class_<dpp_MR>("dppMR")
+  //   .derives<dpp_All>("dppAll")
+  //   .constructor<List>()
+  // ;
+
+  class_<dpp_Dir0>("dppDir0")
     .derives<dpp_All>("dppAll")
     .constructor<List>()
   ;
 
-  class_<dpp_MRProd>("dppMRProd")
-    .derives<dpp_Prod>("dppProd")
+  class_<dpp_Dir>("dppDir")
+    .derives<dpp_All>("dppAll")
     .constructor<List>()
   ;
+
+
   //
   class_<dpp_Eig>("dppEig")
     // .derives<dpp_All>("dppAll")

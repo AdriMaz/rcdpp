@@ -48,7 +48,28 @@ bool next_variation(std::vector<int>::iterator first, std::vector<int>::iterator
     return false;
 }
 
-std::complex<double> computeFourierbasis(const std::vector<int>& k, const NumericVector& x, const double boxlength) {
+std::complex<double> computeFourierbasis(const std::vector<int>& k, const NumericVector& x, const NumericVector& boxlengths) {
+
+  std::complex<double> dpii (0.,2.*M_PI);
+  std::complex<double> res;
+
+  double scal = 0;
+  double bli, bl = 1;
+  int i;
+  int s = x.size();
+  for (i = 0; i < s; ++i) {
+    bli = boxlengths[i];
+    scal += k[i]*x[i]/bli;
+    bl *=bli;
+  }
+
+  res = exp(dpii*scal)*pow(bl, -.5);
+
+  return res;
+
+}
+
+std::complex<double> computeFourierbasis(const std::vector<int>& k, const NumericVector& x) {
 
   std::complex<double> dpii (0.,2.*M_PI);
   std::complex<double> res;
@@ -56,13 +77,14 @@ std::complex<double> computeFourierbasis(const std::vector<int>& k, const Numeri
   double scal=0;
   int i;
   int s = x.size();
-  for (i = 0; i < s; ++i) scal += k[i]*x[i]/boxlength;
+  for (i = 0; i < s; ++i) scal += k[i]*x[i];
 
   res = exp(dpii*scal);
 
   return res;
 
 }
+
 
 
 
@@ -80,7 +102,9 @@ List dpp_All::computeListSamples(const int k, const int nsim) {
 
   if (mIsProj) {    // If projection DPP: compute index only once
 
+    // std::cout<<"Call computeIndex (Proj. case)"<<std::endl;
     this->computeIndex(k);
+    // std::cout<<"computeIndex done"<<std::endl;
 
     for (i = 0; i < nsim; ++i) {
       // std::cout << "Sim n° " << i+1 << std::endl;
@@ -198,7 +222,7 @@ NumericMatrix dpp_All::computeSample(const int k) {
   // std::cout<<"Basis-functions evaluated at first point"<<std::endl;
   for (i = 0; i < n; ++i) {       // Basis-functions evaluated at first point
     K = mIndex[i];
-    tpcplx = computeFourierbasis(K, x, 1.);
+    tpcplx = computeFourierbasis(K, x);
     v[i] = tpcplx;
     nv += pow(abs(tpcplx), 2.);
   }
@@ -243,7 +267,7 @@ NumericMatrix dpp_All::computeSample(const int k) {
       // std::cout<<"Basis functions eval. at proposed point"<<std::endl;
       for (i = 0; i < n; ++i) {
         K = mIndex[i];
-        tpcplx = computeFourierbasis(K, x, 1.);
+        tpcplx = computeFourierbasis(K, x);
         v[i] = tpcplx;
       }
 
@@ -360,7 +384,7 @@ void dpp_Prod::computeIndex(const int k) {
 
     double tp;
 
-    // if (mAsprod) {    // Until now: for Gaussian and L1Gaussonential kernels
+    // if (mAsprod) {    // Until now: for Gaussian and L1Exponential kernels
 
       // int totk = 2*k+1;
       // std::vector<double> eig = computeEigen(k);    // Compute eigenvalues on [-k:k]^d
@@ -431,121 +455,273 @@ void dpp_Prod::computeIndex(const int k) {
 // std::vector< std::vector<double> > dpp_Gauss::computeSample(std::vector<std::vector<int> > index) {
 
 
-void dpp_MR::computeEigenVec(const int k) {
+// void dpp_MR::computeEigenVec(const int k) {
+//
+//
+//   // std::cout<<"In ComputeEigen"<<std::endl;
+//   std::vector<double> eig;
+//
+//   double wsc;
+//   if (mIsCube) {
+//     wsc = mWscale[0];
+//     if (mDim == 1) {
+//         for (int tpk = -k; tpk < k+1; tpk++)  eig.push_back(fabs(tpk/wsc));
+//     } else {
+//       for (int tpk = -k; tpk < k+1; tpk++)  eig.push_back(pow(tpk/wsc, 2));
+//     }
+//     this->setEigen(eig, 0);
+//   } else {
+//     double wscm = 0.;
+//     // double wsc = 1.;
+//     for (int i = 0; i < mDim; ++i) {
+//       wsc = mWscale[i];
+//       if (wsc != wscm) {   // Compute only if current wsc is different from previous one
+//         eig.clear();
+//         if (mDim == 1) {
+//             for (int tpk = -k; tpk < k+1; tpk++)  eig.push_back(fabs(tpk/wsc));
+//         } else {
+//           for (int tpk = -k; tpk < k+1; tpk++)  eig.push_back(pow(tpk/wsc, 2));
+//         }
+//         wscm = wsc;
+//       }
+//       this->setEigen(eig, i);
+//       // this->setEigen(eig);
+//     }
+//   }
+//   // std::cout<<"ComputeEigen Done"<<std::endl;
+//
+// }
 
 
-  // std::cout<<"In ComputeEigen"<<std::endl;
+
+// void dpp_MR::computeIndex(const int k) {
+//
+//     // int totk = 2*k+1;
+//     // int tpk = -k;
+//     // std::cout<<"In ComputeIndex"<<std::endl;
+//
+//     // if (mEig.size() == 0) {
+//       // std::cout << "Computation of eigenvalues required" << std::endl;
+//     this->computeEigenVec(k);
+//     // }
+//     std::vector<int> coord (mDim, 0);              // vector of a possible permutations of {-k,...,k} initialized with -k
+//     std::vector<double> temp(mDim, 0.);                // subvector of K coresponding to coord
+//     std::vector< std::vector<int> > res;          // Vector of kept elements in {-k,...,k}^d
+//
+//     // select(coord, mEig, temp);
+//     this->select(coord, temp);
+//     // std::cout<<"Proposed point:  ("<<temp[0]<<" , "<<temp[1]<<")"<<std::endl;
+//     // std::cout << "With coord.: ("<<coord[0]<<" , "<<coord[1]<<")"<<std::endl;
+//     double tp = 0;
+//     // for (i = 0; i < mDim; ++i)  tp += pow(temp[i], 2.);
+//     if (mDim == 1) tp = temp[0];
+//     else tp = std::accumulate(temp.begin(), temp.end(), 0.);
+//
+//     if (tp <= mTau) {
+//       // std::cout<<"Accepted point:  ("<<coord[0]<<" , "<<coord[1]<<")"<<std::endl;
+//       res.push_back(coord);
+//     }
+//
+//     int totk = 2*k;
+//     while (next_variation(coord.begin(), coord.end(), totk)) {
+//
+//       // select(coord, mEig, temp);
+//       this->select(coord, temp);
+//       // std::cout<<"Proposed point:  ("<<temp[0]<<" , "<<temp[1]<<")"<<std::endl;
+//       // std::cout << "With coord.: ("<<coord[0]<<" , "<<coord[1]<<")"<<std::endl;
+//       // tp = 0;
+//       // for (i = 0; i < mDim; ++i)  tp += pow(temp[i], 2.);
+//       if(mDim == 1) tp = temp[0];
+//       else tp = std::accumulate(temp.begin(), temp.end(), 0.);
+//
+//       if (tp <= mTau) {
+//
+//         res.push_back(coord);
+//       }
+//     }
+//
+//     // std::cout<< "Size of res ="<< res.size();
+//     this->setIndex(res);
+//     // std::cout<<"ComputeIndex Done"<<std::endl;
+//
+// }
+
+
+void dpp_Dir0::computeEigenVec(const int k) {
+
   std::vector<double> eig;
 
-  double wsc;
-  if (mIsCube) {
-    wsc = mWscale[0];
-    if (mDim == 1) {
-        for (int tpk = -k; tpk < k+1; tpk++)  eig.push_back(fabs(tpk/wsc));
+  if (mIsOdd) {
+    // std::cout<<"Case N = k^d with k odd number."<<std::endl;
+    if (mIsCube) {
+      // std::cout<<"Window is a cube ."<<std::endl;
+
+      for (int tpk = -k; tpk < k+1; tpk++)  eig.push_back(1.);
+      // std::cout<<"Store the vector eig (eig.size() = "<<eig.size()<<")"<<std::endl;
+
+      this->setEigen(eig, 0);
+      // std::cout<<"Done"<<std::endl;
     } else {
-      for (int tpk = -k; tpk < k+1; tpk++)  eig.push_back(pow(tpk/wsc, 2));
-    }
-    this->setEigen(eig, 0);
-  } else {
-    double wscm = 0.;
-    // double wsc = 1.;
-    for (int i = 0; i < mDim; ++i) {
-      wsc = mWscale[i];
-      if (wsc != wscm) {   // Compute only if current wsc is different from previous one
+      for (int i = 0; i < mDim; ++i) {
         eig.clear();
-        if (mDim == 1) {
-            for (int tpk = -k; tpk < k+1; tpk++)  eig.push_back(fabs(tpk/wsc));
-        } else {
-          for (int tpk = -k; tpk < k+1; tpk++)  eig.push_back(pow(tpk/wsc, 2));
-        }
-        wscm = wsc;
+        for (int tpk = -k; tpk < k+1; tpk++)  eig.push_back(1.);
+        this->setEigen(eig, i);
       }
-      this->setEigen(eig, i);
-      // this->setEigen(eig);
     }
   }
-  // std::cout<<"ComputeEigen Done"<<std::endl;
-
-}
-
-
-
-void dpp_MR::computeIndex(const int k) {
-
-    // int totk = 2*k+1;
-    // int tpk = -k;
-    // std::cout<<"In ComputeIndex"<<std::endl;
-
-    // if (mEig.size() == 0) {
-      // std::cout << "Computation of eigenvalues required" << std::endl;
-    this->computeEigenVec(k);
-    // }
-    std::vector<int> coord (mDim, 0);              // vector of a possible permutations of {-k,...,k} initialized with -k
-    std::vector<double> temp(mDim, 0.);                // subvector of K coresponding to coord
-    std::vector< std::vector<int> > res;          // Vector of kept elements in {-k,...,k}^d
-
-    // select(coord, mEig, temp);
-    this->select(coord, temp);
-    // std::cout<<"Proposed point:  ("<<temp[0]<<" , "<<temp[1]<<")"<<std::endl;
-    // std::cout << "With coord.: ("<<coord[0]<<" , "<<coord[1]<<")"<<std::endl;
-    double tp = 0;
-    // for (i = 0; i < mDim; ++i)  tp += pow(temp[i], 2.);
-    if (mDim == 1) tp = temp[0];
-    else tp = std::accumulate(temp.begin(), temp.end(), 0.);
-
-    if (tp <= mTau) {
-      // std::cout<<"Accepted point:  ("<<coord[0]<<" , "<<coord[1]<<")"<<std::endl;
-      res.push_back(coord);
-    }
-
-    int totk = 2*k;
-    while (next_variation(coord.begin(), coord.end(), totk)) {
-
-      // select(coord, mEig, temp);
-      this->select(coord, temp);
-      // std::cout<<"Proposed point:  ("<<temp[0]<<" , "<<temp[1]<<")"<<std::endl;
-      // std::cout << "With coord.: ("<<coord[0]<<" , "<<coord[1]<<")"<<std::endl;
-      // tp = 0;
-      // for (i = 0; i < mDim; ++i)  tp += pow(temp[i], 2.);
-      if(mDim == 1) tp = temp[0];
-      else tp = std::accumulate(temp.begin(), temp.end(), 0.);
-
-      if (tp <= mTau) {
-
-        res.push_back(coord);
+  else {
+    double tpbool;
+    // if (mIsCube) {
+    //   tpbool = rbinom(1, 1, 0.5)[0]; // Bernoulli draw
+    //   if (tpbool == 0) {
+    //     for (int tpk = -k; tpk < k; tpk++)  eig.push_back(1.);
+    //     eig.push_back(0.);
+    //   } else {
+    //     eig.push_back(0.);
+    //     for (int tpk = -k+1; tpk < k+1; tpk++)  eig.push_back(1.);
+    //   }
+    //   this->setEigen(eig, 0);
+    //
+    // } else {
+      for (int i = 0; i < mDim; ++i) {
+        eig.clear();
+        tpbool = rbinom(1, 1, 0.5)[0]; // Bernoulli draw
+        if (tpbool == 0) {
+          for (int tpk = -k; tpk < k; tpk++)  eig.push_back(1.);
+          eig.push_back(0.);
+        } else {
+          eig.push_back(0.);
+          for (int tpk = -k+1; tpk < k+1; tpk++)  eig.push_back(1.);
+        }
+        this->setEigen(eig, i);
       }
-    }
-
-    // std::cout<< "Size of res ="<< res.size();
-    this->setIndex(res);
-    // std::cout<<"ComputeIndex Done"<<std::endl;
-
+    // }
+  }
 }
 
+void dpp_Dir0::computeIndex(const int k) {
 
-void dpp_MRProd::computeIndex(const int k) {
-
+    // std::cout<<"In computeIndex: call computeEigenVec"<<std::endl;
     this->computeEigenVec(k);
+    // std::cout<<"In computeIndex: computeEigenVec done"<<std::endl;
 
     std::vector<int> coord (mDim, 0);              // vector of a possible permutations of {-k,...,k} initialized with -k
     std::vector<double> temp(mDim, 0.);                // subvector of K coresponding to coord
     std::vector< std::vector<int> > res;          // Vector of kept elements in {-k,...,k}^d
 
+    double tp = 1;
     // select(coord, mEig, temp);
     this->select(coord, temp);
-    res.push_back(coord);
+    if (mDim == 1) tp = temp[0];
+    else tp = std::accumulate(temp.begin(), temp.end(), 1, std::multiplies<double>());
+
+    if (tp == 1) res.push_back(coord);
     // }
 
     int totk = 2*k;
-    while (next_variation(coord.begin(), coord.end(), totk)) {
 
+    // if (!mIsOdd) --totk;
+
+    while (next_variation(coord.begin(), coord.end(), totk)) {
       this->select(coord, temp);
-      res.push_back(coord);
+
+      if (mDim == 1) tp = temp[0];
+      else tp = std::accumulate(temp.begin(), temp.end(), 1, std::multiplies<double>());
+
+      if (tp == 1) res.push_back(coord);
     }
 
     this->setIndex(res);
 
 }
+
+
+
+void dpp_Dir::computeEigenVec(const int k) {
+
+  std::vector<double> eig;
+
+  int ni, oi;
+  double tpbool;
+  if (mIsProj) {
+    for (int i = 0; i < mDim; ++i) {
+      ni = mN[i];
+      eig.clear();
+      for (int tpk = -k; tpk < k+1; tpk++) {
+        if (abs(tpk) <= ni) eig.push_back(1.);
+        else eig.push_back(0.);
+      }
+
+      this->setEigen(eig, i);
+    }
+  } else {
+    for (int i = 0; i < mDim; ++i) {
+      ni = mN[i];
+      oi = mIsOdd[i];
+      eig.clear();
+      if (oi == 0) {
+        tpbool = rbinom(1, 1, 0.5)[0]; // Bernoulli draw
+        for (int tpk = -k; tpk < k+1; tpk++)  {
+            if (tpk == ni) {
+              if (tpbool == 0) eig.push_back(1.);
+              else eig.push_back(0.);
+            } else if (-tpk == ni) {
+              if (tpbool == 0) eig.push_back(0.);
+              else eig.push_back(1.);
+            } else if (abs(tpk) < ni) eig.push_back(1.);
+            else eig.push_back(0.);
+          }
+      } else {
+        for (int tpk = -k; tpk < k+1; tpk++) {
+          if (abs(tpk) <= ni) eig.push_back(1.);
+          else eig.push_back(0.);
+        }
+      }
+
+      this->setEigen(eig, i);
+    }
+  }
+}
+
+
+void dpp_Dir::computeIndex(const int k) {
+
+    // std::cout<<"In computeIndex: call computeEigenVec"<<std::endl;
+    this->computeEigenVec(k);
+    // std::cout<<"In computeIndex: computeEigenVec done"<<std::endl;
+
+    std::vector<int> coord (mDim, 0);              // vector of a possible permutations of {-k,...,k} initialized with -k
+    std::vector<double> temp(mDim, 0.);                // subvector of K coresponding to coord
+    std::vector< std::vector<int> > res;          // Vector of kept elements in {-k,...,k}^d
+
+    double tp = 1;
+    // select(coord, mEig, temp);
+    this->select(coord, temp);
+    if (mDim == 1) tp = temp[0];
+    else tp = std::accumulate(temp.begin(), temp.end(), 1, std::multiplies<double>());
+
+    if (tp == 1) res.push_back(coord);
+    // }
+
+    int totk = 2*k;
+
+    // if (!mIsOdd) --totk;
+
+    while (next_variation(coord.begin(), coord.end(), totk)) {
+      this->select(coord, temp);
+
+      if (mDim == 1) tp = temp[0];
+      else tp = std::accumulate(temp.begin(), temp.end(), 1, std::multiplies<double>());
+
+      if (tp == 1) res.push_back(coord);
+    }
+
+    this->setIndex(res);
+
+}
+
+
+
 
 
 ////// dpp_Eig class
@@ -674,7 +850,7 @@ NumericMatrix dpp_Eig::computeSample() {
   // std::cout<<"Basis-functions evaluated at first point"<<std::endl;
   for (i = 0; i < n; ++i) {       // Basis-functions evaluated at first point
     K = mIndex[i];
-    tpcplx = computeFourierbasis(K, x, 1.);
+    tpcplx = computeFourierbasis(K, x);
     v[i] = tpcplx;
     nv += pow(abs(tpcplx), 2.);
   }
@@ -719,7 +895,7 @@ NumericMatrix dpp_Eig::computeSample() {
       // std::cout<<"Basis functions eval. at proposed point"<<std::endl;
       for (i = 0; i < n; ++i) {
         K = mIndex[i];
-        tpcplx = computeFourierbasis(K, x, 1.);
+        tpcplx = computeFourierbasis(K, x);
         v[i] = tpcplx;
       }
 

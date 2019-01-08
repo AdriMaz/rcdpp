@@ -77,10 +77,10 @@ rdppEigC <- function(nsim = 1, eigen, index, window = NULL, progress = 0, progre
 
 }
 
-rdppC <- function(rho, k, d, nsim = 1, param = NULL, model = c("G", "L1G", "MR", "MRProd"), window = boxx(rep(list(0:1), d)), progress = 0, progress.sim = 0) {
+rdppC <- function(k, d, nsim = 1, param = NULL, model = c("G", "L1E", "D"), window = boxx(rep(list(0:1), d)), progress = 0, progress.sim = 0) {
+#### k: maximal index for which eigenvalues are computed
 
-
-  if (rho < 0) stop("'rho' must be a non-negative number.")
+  # if (rho < 0) stop("'rho' must be a non-negative number.")
   if (d <= 0) stop("'d' must be a positive integer.")
   if (k < 0) {
     # warning("'k' is a negative integer: its absolute value is taken.")
@@ -104,7 +104,8 @@ rdppC <- function(rho, k, d, nsim = 1, param = NULL, model = c("G", "L1G", "MR",
   bsups <- as.numeric(r[2, ])
   wsc <- bsups-binfs
   wc <- as.numeric(colMeans(r))
-  args <- list(rho = rho, dim = d,
+  args <- list( # rho = rho,
+               dim = d,
                # binfs = as.numeric(r[1, ]), bsups = as.numeric(r[2, ]),
                Wscale = wsc,
                Wcenter = wc,
@@ -120,42 +121,75 @@ rdppC <- function(rho, k, d, nsim = 1, param = NULL, model = c("G", "L1G", "MR",
   switch(model,
     'G' = {
       if(is.null(param)) {
-        args <- c(args, alpha = 1/(sqrt(pi)*rho^(1/d)))
+        stop("'G' model requires 2 parameters ('rho' and 'alpha').")
+        # args <- c(args, alpha = 1/(sqrt(pi)*rho^(1/d)))
       } else {
-        if (length(param) > 1) stop("'G' model requires only 1 parameter ('alpha').")
-        args <- c(args, alpha = param[[1]])
+        if (length(param) > 2) stop("'G' model requires only 2 parameters ('rho' and 'alpha').")
+        if (param[[1]] > (sqrt(pi)*param[[2]])^(-d)) stop("'G' model is not valid.")
+        args <- c(args, rho = param[[1]], alpha = param[[2]])
       }
       dpp <- new(dppGauss, args)
     }
     ,
-    'L1G' = {
+    'L1E' = {
       if (is.null(param)) {
-        args <- c(args, alpha = 1/(2*rho^(1/d)))
+        # args <- c(args, alpha = 1/(2*rho^(1/d)))
+        stop("'L1E' model requires 2 parameters ('rho' and 'alpha').")
       } else {
-        if (length(param) > 1) stop("'param' is missing: 'L1G' model requires only 1 parameter ('alpha').")
-        args <- c(args, alpha = param[[1]])
+        if (length(param) > 2) stop("'L1E' model requires only 2 parameters ('rho' and 'alpha').")
+        if (param[[1]] > (2*param[[2]])^(-d)) stop("'L1E' model is not valid.")
+        args <- c(args, rho = param[[1]], alpha = param[[2]])
       }
-      dpp <- new(dppL1Gauss, args)
+      dpp <- new(dppL1Exp, args)
     },
-    'MR' = {
+    # 'MR' = {
+    #   if (is.null(param)) {
+    #     stop("'MR' model requires 1 parameter ('rho').")
+    #     # tau <- if (d == 1) rho/2 else if (d == 2) rho/pi else (rho*gamma(d/2+1)/(pi^(d/2)))^(2/d)
+    #     # args <- c(args, tau = tau)
+    #   } else {
+    #     if (length(param) > 1) stop("'MR' model requires only 1 parameter ('tau').")
+    #     rho <- param[[1]]
+    #     tau <- if (d == 1) rho/2 else if (d == 2) rho/pi else (rho*gamma(d/2+1)/(pi^(d/2)))^(2/d)
+    #     args <- c(args, tau = tau)
+    #   }
+    #   dpp <- new(dppMR, args)
+    # },
+    # 'MRProd' = {
+    #   if (!is.null(param)) warning("'MRProd' model does not require parameter: 'param' is ignored." )
+    #   dpp <- new(dppMRProd, args)
+    #   tp <- ((rho*prod(wsc))^(1/d)-1)/2
+    #   kmax <- floor(round(tp, 8))
+    #   # if (tp%%2 != 1) warning("'rho' is not a 'd'-power of an odd number: the number of points will not be equal to 'int'.")
+    #   if (abs(tp - kmax) > 1e8) warning("'rho' is not a 'd'-power of an odd number: the number of points will not be equal to 'int'.")
+    #   k <- min(k, kmax)
+    # }
+    'D' = {
       if (is.null(param)) {
-        # stop("'param' is missing: 'MR' model requires 1 parameter ('tau').")
-        tau <- if (d == 1) rho/2 else if (d == 2) rho/pi else (rho*gamma(d/2+1)/(pi^(d/2)))^(2/d)
-        args <- c(args, tau = tau)
+        stop("'D' model requires 1 parameter ('N').")
       } else {
-        if (length(param) > 1) stop("'MR' model requires only 1 parameter ('tau').")
-        args <- c(args, tau = param[[1]])
+        N <- param[[1]]
+        if (length(N) < d) N <- c(N, rep(1, d-N))
+
+        if (sd(N) == 0) {
+          n0 <- N[1]
+          odd <- n0%%2 == 1 ## If n0 is odd -> d-Dirichlet DPP else need an additive operation
+          n0 <- n0%/%2
+          args <- c(args, n0 = n0, odd = odd)
+          k <- n0
+          dpp <- new(dppDir0, args)
+        } else {              ## (prod(N), d)-Dirichlet DPP
+          args <- c(args, N = 0, odd = 0)
+          odd <- N%%2 == 1
+          N <- N%/%2
+          args$N <- N; args$odd <- odd
+          # cat("N =", N, "\n")
+          k <- max(N)
+          dpp <- new(dppDir, args)
+        }
       }
-      dpp <- new(dppMR, args)
-    },
-    'MRProd' = {
-      if (!is.null(param)) warning("'MRProd' model does not require parameter: 'param' is ignored." )
-      dpp <- new(dppMRProd, args)
-      tp <- ((rho*prod(wsc))^(1/d)-1)/2
-      kmax <- floor(round(tp, 8))
-      # if (tp%%2 != 1) warning("'rho' is not a 'd'-power of an odd number: the number of points will not be equal to 'int'.")
-      if (abs(tp - kmax) > 1e8) warning("'rho' is not a 'd'-power of an odd number: the number of points will not be equal to 'int'.")
-      k <- min(k, kmax)
+
+
     }
   )
 
@@ -190,82 +224,82 @@ rdppC <- function(rho, k, d, nsim = 1, param = NULL, model = c("G", "L1G", "MR",
 
 }
 
-computeEigen <- function(rho, k, d, param = NULL, model = c("G", "L1G", "MR", "MRProd")) {
-
-
-    if (rho < 0) stop("'rho' must be a non-negative number.")
-    if (d <= 0) stop("'d' must be a positive integer.")
-    if (k < 0) {
-      # warning("'k' is a negative integer: its absolute value is taken.")
-      k <- abs(k)
-    }
-
-
-    # if (!is.null(param) & !is.list(param)) stop("'param' must be a list.")
-
-    if (missing(model)) model <- "G"
-    model <- match.arg(model)
-
-    window <- as.boxx(window)
-    r <- window$ranges
-    if (ncol(r) != d) stop("Dimension of 'window' is different from 'd'.")
-
-    # binfs <- as.numeric(r[1, ])
-    # bsups <- as.numeric(r[2, ])
-    wsc <- as.numeric(r[2,]-r[1,])
-    wc <- as.numeric(colMeans(r))
-    args <- list(rho = rho, dim = d,
-                 Wscale = wsc,
-                 Wcenter = wc,
-                 ic = TRUE,
-                 progress = 0, simprogress = 0
-                )
-
-    switch(model,
-      'G' = {
-        if(is.null(param)) {
-          args <- c(args, alpha = 1/(sqrt(pi)*rho^(1/d)))
-        } else {
-          if (length(param) > 1) stop("'G' model requires only 1 parameter ('alpha').")
-          args <- c(args, alpha = param[[1]])
-        }
-        dpp <- new(dppGauss, args)
-      }
-      ,
-      'L1G' = {
-        if (is.null(param)) {
-          args <- c(args, alpha = 1/(2*rho^(1/d)))
-        } else {
-          if (length(param) > 1) stop("'param' is missing: 'L1G' model requires only 1 parameter ('alpha').")
-          args <- c(args, alpha = param[[1]])
-        }
-        dpp <- new(dppL1Gauss, args)
-      },
-      'MR' = {
-        if (is.null(param)) {
-          stop("'param' is missing: 'MR' model requires 1 parameter ('tau').")
-        } else {
-          if (length(param) > 1) stop("'MR' model requires only 1 parameter ('tau').")
-          args <- c(args, tau = param[[1]])
-        }
-        dpp <- new(dppMR, args)
-      },
-      'MRProd' = {
-        if (!is.null(param)) warning("'MRProd' model does not require parameter: 'param' is ignored." )
-        dpp <- new(dppMRProd, args)
-        tp <- ((rho*prod(wsc))^(1/d)-1)/2
-        kmax <- floor(round(tp, 8))
-        # if (tp%%2 != 1) warning("'rho' is not a 'd'-power of an odd number: the number of points will not be equal to 'int'.")
-        if (abs(tp - kmax) > 1e8) warning("'rho' is not a 'd'-power of an odd number: the number of points will not be equal to 'int'.")
-        k <- min(k, kmax)
-      }
-    )
-
-    res <- dpp$eigen(k)
-
-    res
-
-}
+# computeEigen <- function(rho, k, d, param = NULL, model = c("G", "L1E", "MR", "MRProd")) {
+#
+#
+#     if (rho < 0) stop("'rho' must be a non-negative number.")
+#     if (d <= 0) stop("'d' must be a positive integer.")
+#     if (k < 0) {
+#       # warning("'k' is a negative integer: its absolute value is taken.")
+#       k <- abs(k)
+#     }
+#
+#
+#     # if (!is.null(param) & !is.list(param)) stop("'param' must be a list.")
+#
+#     if (missing(model)) model <- "G"
+#     model <- match.arg(model)
+#
+#     window <- as.boxx(window)
+#     r <- window$ranges
+#     if (ncol(r) != d) stop("Dimension of 'window' is different from 'd'.")
+#
+#     # binfs <- as.numeric(r[1, ])
+#     # bsups <- as.numeric(r[2, ])
+#     wsc <- as.numeric(r[2,]-r[1,])
+#     wc <- as.numeric(colMeans(r))
+#     args <- list(rho = rho, dim = d,
+#                  Wscale = wsc,
+#                  Wcenter = wc,
+#                  ic = TRUE,
+#                  progress = 0, simprogress = 0
+#                 )
+#
+#     switch(model,
+#       'G' = {
+#         if(is.null(param)) {
+#           args <- c(args, alpha = 1/(sqrt(pi)*rho^(1/d)))
+#         } else {
+#           if (length(param) > 1) stop("'G' model requires only 1 parameter ('alpha').")
+#           args <- c(args, alpha = param[[1]])
+#         }
+#         dpp <- new(dppGauss, args)
+#       }
+#       ,
+#       'L1E' = {
+#         if (is.null(param)) {
+#           args <- c(args, alpha = 1/(2*rho^(1/d)))
+#         } else {
+#           if (length(param) > 1) stop("'param' is missing: 'L1E' model requires only 1 parameter ('alpha').")
+#           args <- c(args, alpha = param[[1]])
+#         }
+#         dpp <- new(dppL1Exp, args)
+#       },
+#       'MR' = {
+#         if (is.null(param)) {
+#           stop("'param' is missing: 'MR' model requires 1 parameter ('tau').")
+#         } else {
+#           if (length(param) > 1) stop("'MR' model requires only 1 parameter ('tau').")
+#           args <- c(args, tau = param[[1]])
+#         }
+#         dpp <- new(dppMR, args)
+#       },
+#       'MRProd' = {
+#         if (!is.null(param)) warning("'MRProd' model does not require parameter: 'param' is ignored." )
+#         dpp <- new(dppMRProd, args)
+#         tp <- ((rho*prod(wsc))^(1/d)-1)/2
+#         kmax <- floor(round(tp, 8))
+#         # if (tp%%2 != 1) warning("'rho' is not a 'd'-power of an odd number: the number of points will not be equal to 'int'.")
+#         if (abs(tp - kmax) > 1e8) warning("'rho' is not a 'd'-power of an odd number: the number of points will not be equal to 'int'.")
+#         k <- min(k, kmax)
+#       }
+#     )
+#
+#     res <- dpp$eigen(k)
+#
+#     res
+#
+# }
 
 #
 # rdppGauss <- function(rho, d, alpha = 1/(sqrt(pi)*rho^(1/d)), k, nsim = 1
@@ -303,11 +337,11 @@ computeEigen <- function(rho, k, d, param = NULL, model = c("G", "L1G", "MR", "M
 # }
 #
 #
-# rdppL1Gauss <- function(rho, d, alpha = 1/(2*rho^(1/d)), k, nsim = 1
+# rdppL1Exp <- function(rho, d, alpha = 1/(2*rho^(1/d)), k, nsim = 1
 #   # , window = boxx(rep(list(0:1), d))
 #               ) {
 #
-#    dppE <- new(dppL1Gauss, list(rho = rho, alpha = alpha, dim = d
+#    dppE <- new(dppL1Exp, list(rho = rho, alpha = alpha, dim = d
 #      # , binfs = unlist(ranges[1, ]), bsups = unlist(ranges[2, ]))
 #    ))
 #

@@ -20,7 +20,7 @@ class dpp_All {
 
   protected:
 
-    double mRho;    // Intensity
+    // double mRho;    // Intensity
     int mDim;         // Dimension
 
     // NumericVector mBinfs;
@@ -80,7 +80,8 @@ class dpp_All {
 
         dpp_All() { };
 
-        dpp_All(List args) : mRho(as<double>(args["rho"])),
+        dpp_All(List args) :
+        // mRho(as<double>(args["rho"])),
                             mDim(as<int>(args["dim"])),
                             mProg(as<int>(args["progress"])),
                             mProgSim(as<int>(args["simprogress"])),
@@ -91,6 +92,8 @@ class dpp_All {
                             mWscale = args["Wscale"];
                             mWcenter = args["Wcenter"];
 
+                            if (!mIsCube) mEig.resize(mDim);
+                            else mEig.resize(1);
                             // std::cout<<"Wscale = ("<<mWscale[0]<<","<<mWscale[1]<<")"<<std::endl;
                             // std::cout<<"Wcenter = ("<<mWcenter[0]<<","<<mWcenter[1]<<")"<<std::endl;
                             // mPws = std::accumulate(mWscale.begin(), mWscale.end(), 1., std::multiplies<double>());
@@ -101,7 +104,8 @@ class dpp_All {
 
                           };
 
-        dpp_All(double rho, int dim) : mRho(rho),
+        dpp_All(double rho, int dim) :
+        // mRho(rho),
                                       mDim(dim) { };
 
         ~dpp_All() { };
@@ -134,7 +138,7 @@ class dpp_All {
 
 
 // Class of d-dimensional DPPs whose each eigenvalue (indexed by Z^d) is product of values indexed by Z
-// contains: Gaussian, L1Gaussonential and MRProd DPPs
+// contains: Gaussian, L1Exponential and MRProd DPPs
 class dpp_Prod : public dpp_All {
 
 
@@ -149,14 +153,14 @@ public:
     mIsProd = true;
 
     // If the definition set is a ``cube'', margins eigen values are identical on each direction
-    if (!mIsCube) mEig.resize(mDim);
-    else mEig.resize(1);
+    // if (!mIsCube) mEig.resize(mDim);
+    // else mEig.resize(1);
   };
 
   dpp_Prod(double rho, int dim) : dpp_All(rho, dim) {
     mIsProd = true;
-    if (!mIsCube) mEig.resize(mDim);
-    else mEig.resize(1);
+    // if (!mIsCube) mEig.resize(mDim);
+    // else mEig.resize(1);
   };
 
   ~dpp_Prod() { };
@@ -174,7 +178,7 @@ class dpp_Gauss : public dpp_Prod {
 
   private:
 
-    // double mRho;    // Intensity
+    double mRho;    // Intensity
     double mAlpha;  // alpha parameter
     // int mDim;         // Dimension
 
@@ -192,6 +196,7 @@ class dpp_Gauss : public dpp_Prod {
 
 
     dpp_Gauss(List args) : dpp_Prod(args),
+                          mRho(as<double>(args["rho"])),
                           mAlpha(as<double>(args["alpha"])) {
                           // mAsprod = true;
                           mIsProj = false;
@@ -221,11 +226,11 @@ class dpp_Gauss : public dpp_Prod {
 };
 
 
-class dpp_L1Gauss : public dpp_Prod {
+class dpp_L1Exp : public dpp_Prod {
 
   private:
 
-    // double mRho;    // Intensity
+    double mRho;    // Intensity
     double mAlpha;  // alpha parameter
     // int mDim;         // Dimension
 
@@ -236,27 +241,28 @@ class dpp_L1Gauss : public dpp_Prod {
 
   public:
 
-    dpp_L1Gauss() : dpp_Prod() {
+    dpp_L1Exp() : dpp_Prod() {
       // mAsprod = true;
       mIsProj = false;
 
     };
 
-    dpp_L1Gauss(List args) : dpp_Prod(args),
+    dpp_L1Exp(List args) : dpp_Prod(args),
+                         mRho(as<double>(args["rho"])),
                          mAlpha(as<double>(args["alpha"])) {
       mIsProj = false;
 
     };
 
 
-    // dpp_L1Gauss(double rho, double alpha, int dim) : dpp_Prod(rho, dim),
+    // dpp_L1Exp(double rho, double alpha, int dim) : dpp_Prod(rho, dim),
     //                                              mAlpha(alpha) {
     //   // mAsprod = true;
     //   mIsProj = false;
     //
     //  };
 
-    ~dpp_L1Gauss() { };
+    ~dpp_L1Exp() { };
 
 
     // void computeEigen(const int k);
@@ -274,49 +280,138 @@ class dpp_L1Gauss : public dpp_Prod {
 
 // Most repulsive stationary DPP
 
-class dpp_MR : public dpp_All {
+// class dpp_MR : public dpp_All {
+//
+//   private:
+//     double mTau;
+//
+//   public:
+//
+//     dpp_MR() : dpp_All() {
+//       // mAsprod = false;
+//       mIsProj = true;
+//       mIsProd = false;
+//
+//       if (!mIsCube) mEig.resize(mDim);
+//       else mEig.resize(1);
+//     };
+//
+//     dpp_MR(List args) : dpp_All(args),
+//                         mTau(as<double>(args["tau"])) {
+//
+//       // std::cout<<"Tau = "<<mTau << std::endl;
+//       // mAsprod = false;
+//       mIsProj = true;
+//       mIsProd = false;
+//
+//       if (!mIsCube) mEig.resize(mDim);
+//       else mEig.resize(1);
+//     };
+//
+//
+//     // dpp_MR(double rho, int dim) : dpp_All(rho, dim) {
+//     //   if (mDim == 1) mTau = mRho/2.;
+//     //   else if (mDim == 2) mTau = mRho/M_PI;
+//     //   else mTau = mRho*mDim*tgamma(mDim/2.)/(2.*pow(M_PI, mDim/2.));
+//     //
+//     //   // mAsprod = false;
+//     //   mIsProj = true;
+//     //   mIsProd = false;
+//     //
+//     //   if (!mIsCube) mEig.resize(mDim);
+//     //   else mEig.resize(1);
+//     // };
+//
+//     ~dpp_MR() { };
+//
+//
+//     void computeIndex(const int k);
+//
+//     void computeEigenVec(const int k);
+//
+//
+// };
+
+
+class dpp_Dir0 : public dpp_All {
 
   private:
-    double mTau;
+    int mN;
+    bool mIsOdd;
 
   public:
 
-    dpp_MR() : dpp_All() {
+    dpp_Dir0() : dpp_All() {
       // mAsprod = false;
       mIsProj = true;
-      mIsProd = false;
 
-      if (!mIsCube) mEig.resize(mDim);
-      else mEig.resize(1);
+
     };
 
-    dpp_MR(List args) : dpp_All(args),
-                        mTau(as<double>(args["tau"])) {
-
+    dpp_Dir0(List args) : dpp_All(args),
+                          mN(as<int>(args["n0"])),
+                          mIsOdd(as<bool>(args["odd"])) {
+      // mTau = (pow(mRho, 1./mDim)-1.)/2.;
       // std::cout<<"Tau = "<<mTau << std::endl;
       // mAsprod = false;
-      mIsProj = true;
-      mIsProd = false;
+      // std::cout<<"mN = "<<mN<<", mIsOdd = "<<mIsOdd<<std::endl;
+      mIsProj = mIsOdd;
+      if (!mIsOdd & mIsCube) {
+        mIsCube = !mIsCube;
+        mEig.resize(mDim);
+      }
 
-      if (!mIsCube) mEig.resize(mDim);
-      else mEig.resize(1);
     };
 
 
-    // dpp_MR(double rho, int dim) : dpp_All(rho, dim) {
-    //   if (mDim == 1) mTau = mRho/2.;
-    //   else if (mDim == 2) mTau = mRho/M_PI;
-    //   else mTau = mRho*mDim*tgamma(mDim/2.)/(2.*pow(M_PI, mDim/2.));
-    //
-    //   // mAsprod = false;
-    //   mIsProj = true;
-    //   mIsProd = false;
-    //
-    //   if (!mIsCube) mEig.resize(mDim);
-    //   else mEig.resize(1);
-    // };
+    ~dpp_Dir0() { };
 
-    ~dpp_MR() { };
+
+    void computeIndex(const int k);
+
+    void computeEigenVec(const int k);
+
+
+};
+
+class dpp_Dir : public dpp_All {
+
+  private:
+    IntegerVector mN;
+    IntegerVector mIsOdd;
+
+  public:
+
+    dpp_Dir() : dpp_All() {
+      // mAsprod = false;
+      mIsProj = true;
+    };
+
+    dpp_Dir(List args) : dpp_All(args) {
+      // mTau = (pow(mRho, 1./mDim)-1.)/2.;
+      // std::cout<<"Tau = "<<mTau << std::endl;
+      // mAsprod = false;
+      // std::cout<<"mN = "<<mN<<", mIsOdd = "<<mIsOdd<<std::endl;
+
+      // std::cout<<"Read 'N' arguments"<<std::endl;
+      mN = args["N"];
+      // std::cout<<"Done"<<std::endl;
+      mIsOdd = args["odd"];
+
+      mIsCube = false;
+      mEig.resize(mDim);
+
+      mIsProj = (bool)(std::accumulate(mIsOdd.begin(), mIsOdd.end(), 1, std::multiplies<int>()));
+
+      // if (!mIsProj & mIsCube) {
+      //   mIsCube = !mIsCube;
+      //   mEig.resize(mDim);
+      // }
+
+    };
+
+
+    ~dpp_Dir() { };
 
 
     void computeIndex(const int k);
@@ -327,44 +422,6 @@ class dpp_MR : public dpp_All {
 };
 
 
-class dpp_MRProd : public dpp_Prod {
-
-  // private:
-    // double mTau;
-
-  public:
-
-    dpp_MRProd() : dpp_Prod() {
-      // mAsprod = false;
-      mIsProj = true;
-
-    };
-
-    dpp_MRProd(List args) : dpp_Prod(args) {
-      // mTau = (pow(mRho, 1./mDim)-1.)/2.;
-      // std::cout<<"Tau = "<<mTau << std::endl;
-      // mAsprod = false;
-      mIsProj = true;
-
-    };
-
-
-    // dpp_MRProd(double rho, int dim) : dpp_Prod(rho, dim) {
-    //   // mTau = (pow(mRho, 1./mDim)-1.)/2.;
-    //   // mAsprod = false;
-    //   mIsProj = true;
-    //
-    // };
-
-    ~dpp_MRProd() { };
-
-
-    void computeIndex(const int k);
-
-    double computeEigen(const int k, double wsc) { return fabs(k/wsc) ;};
-
-
-};
 
 //
 // class dpp_Eig : public dpp_All {
@@ -482,7 +539,8 @@ void print_vector(std::vector<std::vector<int> > v);
 
 
 bool next_variation(std::vector<int>::iterator first, std::vector<int>::iterator last,  const int max) ;
-std::complex<double> computeFourierbasis(const std::vector<int>& k, const NumericVector& x, const double boxlength) ;
+std::complex<double> computeFourierbasis(const std::vector<int>& k, const NumericVector& x, const NumericVector& boxlengths) ;
+std::complex<double> computeFourierbasis(const std::vector<int>& k, const NumericVector& x) ;
 // void select(const std::vector<int>& coord, const std::vector<double>& v, std::vector<double>& res) ;
 // void select(const std::vector<int>& coord, const std::vector<int>& v, std::vector<int>& res) ;
 // template <typename T1, typename T2> void select(const std::vector<T1>& coord, const std::vector<T2>& v, std::vector<T2>& res) ;
