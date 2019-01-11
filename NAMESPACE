@@ -1,4 +1,4 @@
-useDynLib(rcdpp2, .registration=TRUE)
+useDynLib(rcdpp, .registration=TRUE)
 
 
 export(rdppC, rdppEigC)
