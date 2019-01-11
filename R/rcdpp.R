@@ -171,7 +171,7 @@ rdppC <- function(k, d, nsim = 1, param = NULL, model = c("G", "L1E", "D"), wind
         N <- param[[1]]
         if (length(N) < d) N <- c(N, rep(1, d-N))
 
-        if (sd(N) == 0) {
+        if (sd(N) == 0 | length(N) == 1) {
           n0 <- N[1]
           odd <- n0%%2 == 1 ## If n0 is odd -> d-Dirichlet DPP else need an additive operation
           n0 <- n0%/%2
