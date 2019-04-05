@@ -333,52 +333,52 @@ class dpp_L1Exp : public dpp_Prod {
 // };
 
 
-class dpp_Dir0 : public dpp_All {
-
-  private:
-    int mN;
-    bool mIsOdd;
-
-  public:
-
-    dpp_Dir0() : dpp_All() {
-      // mAsprod = false;
-      mIsProj = true;
-
-
-    };
-
-    dpp_Dir0(List args) : dpp_All(args),
-                          mN(as<int>(args["n0"])),
-                          mIsOdd(as<bool>(args["odd"])) {
-      // mTau = (pow(mRho, 1./mDim)-1.)/2.;
-      // std::cout<<"Tau = "<<mTau << std::endl;
-      // mAsprod = false;
-      // std::cout<<"mN = "<<mN<<", mIsOdd = "<<mIsOdd<<std::endl;
-      mIsProj = mIsOdd;
-      if (!mIsOdd & mIsCube) {
-        mIsCube = !mIsCube;
-        mEig.resize(mDim);
-      }
-
-    };
-
-
-    ~dpp_Dir0() { };
-
-
-    void computeIndex(const int k);
-
-    void computeEigenVec(const int k);
-
-
-};
+// class dpp_Dir0 : public dpp_All {
+//
+//   private:
+//     int mN;
+//     bool mIsOdd;
+//
+//   public:
+//
+//     dpp_Dir0() : dpp_All() {
+//       // mAsprod = false;
+//       mIsProj = true;
+//
+//
+//     };
+//
+//     dpp_Dir0(List args) : dpp_All(args),
+//                           mN(as<int>(args["n0"])),
+//                           mIsOdd(as<bool>(args["odd"])) {
+//       // mTau = (pow(mRho, 1./mDim)-1.)/2.;
+//       // std::cout<<"Tau = "<<mTau << std::endl;
+//       // mAsprod = false;
+//       // std::cout<<"mN = "<<mN<<", mIsOdd = "<<mIsOdd<<std::endl;
+//       mIsProj = mIsOdd;
+//       if (!mIsOdd & mIsCube) {
+//         mIsCube = !mIsCube;
+//         mEig.resize(mDim);
+//       }
+//
+//     };
+//
+//
+//     ~dpp_Dir0() { };
+//
+//
+//     void computeIndex(const int k);
+//
+//     void computeEigenVec(const int k);
+//
+//
+// };
 
 class dpp_Dir : public dpp_All {
 
   private:
     IntegerVector mN;
-    IntegerVector mIsOdd;
+    // IntegerVector mIsOdd;
 
   public:
 
@@ -396,12 +396,12 @@ class dpp_Dir : public dpp_All {
       // std::cout<<"Read 'N' arguments"<<std::endl;
       mN = args["N"];
       // std::cout<<"Done"<<std::endl;
-      mIsOdd = args["odd"];
+      // mIsOdd = args["odd"];
 
-      mIsCube = false;
+      // mIsCube = false;
       mEig.resize(mDim);
 
-      mIsProj = (bool)(std::accumulate(mIsOdd.begin(), mIsOdd.end(), 1, std::multiplies<int>()));
+      // mIsProj = (bool)(std::accumulate(mIsOdd.begin(), mIsOdd.end(), 1, std::multiplies<int>()));
 
       // if (!mIsProj & mIsCube) {
       //   mIsCube = !mIsCube;
@@ -532,10 +532,10 @@ class dpp_Eig {
 //
 
 // void print_vector(std::vector<std::complex<double> > v);
-void print_vector(std::vector<std::vector<int> > v);
+// void print_vector(std::vector<std::vector<int> > v);
 // void print_vector(std::vector<double> v);
 
-// template <typename T> void print_vector(std::vector<T> v);
+template <typename T> void print_vector(std::vector<T> v);
 
 
 bool next_variation(std::vector<int>::iterator first, std::vector<int>::iterator last,  const int max) ;

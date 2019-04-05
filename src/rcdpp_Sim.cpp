@@ -5,25 +5,26 @@
 //   std::cout << std::endl;
 // }
 //
-void print_vector(std::vector<std::vector<int> > v) {
-  int n = v.size();
-  std::vector<int> K;
-  for (int i = 0; i < n; ++i) {
-    K = v[i];
-    for (int j = 0; j < K.size() ; ++j) {
-      std::cout << K[j] << "  ";
-    }
-    std::cout << std::endl;
-  }
-  std::cout << std::endl;
-}
-
-// template <typename T>
-// void print_vector(std::vector<T> v) {
+// void print_vector(std::vector<std::vector<int> > v) {
 //   int n = v.size();
-//   for (int i = 0; i < n; ++i) std::cout << v[i] << " ";
+//   std::vector<int> K;
+//   for (int i = 0; i < n; ++i) {
+//     K = v[i];
+//     for (int j = 0; j < K.size() ; ++j) {
+//       std::cout << K[j] << "  ";
+//     }
+//     std::cout << std::endl;
+//   }
 //   std::cout << std::endl;
 // }
+
+
+template <typename T>
+void print_vector(std::vector<T> v) {
+  int n = v.size();
+  for (int i = 0; i < n; ++i) std::cout << v[i] << " ";
+  std::cout << std::endl;
+}
 
 
 bool next_variation(std::vector<int>::iterator first, std::vector<int>::iterator last,  const int max) {
@@ -230,7 +231,7 @@ NumericMatrix dpp_All::computeSample(const int k) {
   nv = pow(nv, 0.5);
   // std::cout<<"Record normalized version in the Gram-Schmidt matrices"<<std::endl;
 
-  for (int i = 0; i < mDim; ++i ) {       // Record normalized version in the Gram-Schmidt matrices:
+  for (int i = 0; i < n; ++i ) {       // Record normalized version in the Gram-Schmidt matrices:
     etp[i] = v[i]/nv;
     etpstar[i] = std::conj(etp[i]);
   }
@@ -547,140 +548,141 @@ void dpp_Prod::computeIndex(const int k) {
 // }
 
 
-void dpp_Dir0::computeEigenVec(const int k) {
-
-  std::vector<double> eig;
-
-  if (mIsOdd) {
-    // std::cout<<"Case N = k^d with k odd number."<<std::endl;
-    if (mIsCube) {
-      // std::cout<<"Window is a cube ."<<std::endl;
-
-      for (int tpk = -k; tpk < k+1; tpk++)  eig.push_back(1.);
-      // std::cout<<"Store the vector eig (eig.size() = "<<eig.size()<<")"<<std::endl;
-
-      this->setEigen(eig, 0);
-      // std::cout<<"Done"<<std::endl;
-    } else {
-      for (int i = 0; i < mDim; ++i) {
-        eig.clear();
-        for (int tpk = -k; tpk < k+1; tpk++)  eig.push_back(1.);
-        this->setEigen(eig, i);
-      }
-    }
-  }
-  else {
-    double tpbool;
-    // if (mIsCube) {
-    //   tpbool = rbinom(1, 1, 0.5)[0]; // Bernoulli draw
-    //   if (tpbool == 0) {
-    //     for (int tpk = -k; tpk < k; tpk++)  eig.push_back(1.);
-    //     eig.push_back(0.);
-    //   } else {
-    //     eig.push_back(0.);
-    //     for (int tpk = -k+1; tpk < k+1; tpk++)  eig.push_back(1.);
-    //   }
-    //   this->setEigen(eig, 0);
-    //
-    // } else {
-      for (int i = 0; i < mDim; ++i) {
-        eig.clear();
-        tpbool = rbinom(1, 1, 0.5)[0]; // Bernoulli draw
-        if (tpbool == 0) {
-          for (int tpk = -k; tpk < k; tpk++)  eig.push_back(1.);
-          eig.push_back(0.);
-        } else {
-          eig.push_back(0.);
-          for (int tpk = -k+1; tpk < k+1; tpk++)  eig.push_back(1.);
-        }
-        this->setEigen(eig, i);
-      }
-    // }
-  }
-}
-
-void dpp_Dir0::computeIndex(const int k) {
-
-    // std::cout<<"In computeIndex: call computeEigenVec"<<std::endl;
-    this->computeEigenVec(k);
-    // std::cout<<"In computeIndex: computeEigenVec done"<<std::endl;
-
-    std::vector<int> coord (mDim, 0);              // vector of a possible permutations of {-k,...,k} initialized with -k
-    std::vector<double> temp(mDim, 0.);                // subvector of K coresponding to coord
-    std::vector< std::vector<int> > res;          // Vector of kept elements in {-k,...,k}^d
-
-    double tp = 1;
-    // select(coord, mEig, temp);
-    this->select(coord, temp);
-    if (mDim == 1) tp = temp[0];
-    else tp = std::accumulate(temp.begin(), temp.end(), 1, std::multiplies<double>());
-
-    if (tp == 1) res.push_back(coord);
-    // }
-
-    int totk = 2*k;
-
-    // if (!mIsOdd) --totk;
-
-    while (next_variation(coord.begin(), coord.end(), totk)) {
-      this->select(coord, temp);
-
-      if (mDim == 1) tp = temp[0];
-      else tp = std::accumulate(temp.begin(), temp.end(), 1, std::multiplies<double>());
-
-      if (tp == 1) res.push_back(coord);
-    }
-
-    this->setIndex(res);
-
-}
+// void dpp_Dir0::computeEigenVec(const int k) {
+//
+//   std::vector<double> eig;
+//
+//   if (mIsOdd) {
+//     // std::cout<<"Case N = k^d with k odd number."<<std::endl;
+//     if (mIsCube) {
+//       // std::cout<<"Window is a cube ."<<std::endl;
+//
+//       for (int tpk = -k; tpk < k+1; tpk++)  eig.push_back(1.);
+//       // std::cout<<"Store the vector eig (eig.size() = "<<eig.size()<<")"<<std::endl;
+//
+//       this->setEigen(eig, 0);
+//       // std::cout<<"Done"<<std::endl;
+//     } else {
+//       for (int i = 0; i < mDim; ++i) {
+//         eig.clear();
+//         for (int tpk = -k; tpk < k+1; tpk++)  eig.push_back(1.);
+//         this->setEigen(eig, i);
+//       }
+//     }
+//   }
+//   else {
+//     double tpbool;
+//     // if (mIsCube) {
+//     //   tpbool = rbinom(1, 1, 0.5)[0]; // Bernoulli draw
+//     //   if (tpbool == 0) {
+//     //     for (int tpk = -k; tpk < k; tpk++)  eig.push_back(1.);
+//     //     eig.push_back(0.);
+//     //   } else {
+//     //     eig.push_back(0.);
+//     //     for (int tpk = -k+1; tpk < k+1; tpk++)  eig.push_back(1.);
+//     //   }
+//     //   this->setEigen(eig, 0);
+//     //
+//     // } else {
+//       for (int i = 0; i < mDim; ++i) {
+//         eig.clear();
+//         tpbool = rbinom(1, 1, 0.5)[0]; // Bernoulli draw
+//         if (tpbool == 0) {
+//           for (int tpk = -k; tpk < k; tpk++)  eig.push_back(1.);
+//           eig.push_back(0.);
+//         } else {
+//           eig.push_back(0.);
+//           for (int tpk = -k+1; tpk < k+1; tpk++)  eig.push_back(1.);
+//         }
+//         this->setEigen(eig, i);
+//       }
+//     // }
+//   }
+// }
+//
+// void dpp_Dir0::computeIndex(const int k) {
+//
+//     // std::cout<<"In computeIndex: call computeEigenVec"<<std::endl;
+//     this->computeEigenVec(k);
+//     // std::cout<<"In computeIndex: computeEigenVec done"<<std::endl;
+//
+//     std::vector<int> coord (mDim, 0);              // vector of a possible permutations of {-k,...,k} initialized with -k
+//     std::vector<double> temp(mDim, 0.);                // subvector of K coresponding to coord
+//     std::vector< std::vector<int> > res;          // Vector of kept elements in {-k,...,k}^d
+//
+//     double tp = 1;
+//     // select(coord, mEig, temp);
+//     this->select(coord, temp);
+//     if (mDim == 1) tp = temp[0];
+//     else tp = std::accumulate(temp.begin(), temp.end(), 1, std::multiplies<double>());
+//
+//     if (tp == 1) res.push_back(coord);
+//     // }
+//
+//     int totk = 2*k;
+//
+//     // if (!mIsOdd) --totk;
+//
+//     while (next_variation(coord.begin(), coord.end(), totk)) {
+//       this->select(coord, temp);
+//
+//       if (mDim == 1) tp = temp[0];
+//       else tp = std::accumulate(temp.begin(), temp.end(), 1, std::multiplies<double>());
+//
+//       if (tp == 1) res.push_back(coord);
+//     }
+//
+//     this->setIndex(res);
+//
+// }
 
 
 
 void dpp_Dir::computeEigenVec(const int k) {
 
+
+  // std::cout<<"In computeEigenVec"<<std::endl;
   std::vector<double> eig;
 
-  int ni, oi;
-  double tpbool;
-  if (mIsProj) {
-    for (int i = 0; i < mDim; ++i) {
-      ni = mN[i];
-      eig.clear();
-      for (int tpk = -k; tpk < k+1; tpk++) {
-        if (abs(tpk) <= ni) eig.push_back(1.);
-        else eig.push_back(0.);
-      }
+  int ni;
+  int n1=0,n0=0;
 
-      this->setEigen(eig, i);
+  if (mIsCube) {
+    // std::cout<<"Window is a cube ."<<std::endl;
+    ni = mN[0];
+    for (int tpk = 0; tpk < k; tpk++)  {
+      if (tpk < ni) {
+        eig.push_back(1.);
+        n1++;
+      } else {
+        eig.push_back(0.);
+        n0++;
+      }
     }
+    // std::cout<<"Store the vector eig (eig.size() = "<<eig.size()<<")"<<std::endl;
+    // std::cout<<"eig.size() = "<<eig.size()<<std::endl;
+    // std::cout<<"# of 1 = "<<n1<<std::endl;
+    // std::cout<<"# of 0 = "<<n0<<std::endl;
+    this->setEigen(eig, 0);
+    // std::cout<<"Done"<<std::endl;
   } else {
     for (int i = 0; i < mDim; ++i) {
       ni = mN[i];
-      oi = mIsOdd[i];
       eig.clear();
-      if (oi == 0) {
-        tpbool = rbinom(1, 1, 0.5)[0]; // Bernoulli draw
-        for (int tpk = -k; tpk < k+1; tpk++)  {
-            if (tpk == ni) {
-              if (tpbool == 0) eig.push_back(1.);
-              else eig.push_back(0.);
-            } else if (-tpk == ni) {
-              if (tpbool == 0) eig.push_back(0.);
-              else eig.push_back(1.);
-            } else if (abs(tpk) < ni) eig.push_back(1.);
-            else eig.push_back(0.);
-          }
-      } else {
-        for (int tpk = -k; tpk < k+1; tpk++) {
-          if (abs(tpk) <= ni) eig.push_back(1.);
-          else eig.push_back(0.);
+      for (int tpk = 0; tpk < k; tpk++) {
+        if (tpk <= ni) {
+          eig.push_back(1.);
+          n1++;
+        } else {
+          eig.push_back(0.);
+          n0++;
         }
       }
-
+      // std::cout<<"eig.size() = "<<eig.size()<<std::endl;
       this->setEigen(eig, i);
+
+      }
     }
-  }
 }
 
 
@@ -690,7 +692,7 @@ void dpp_Dir::computeIndex(const int k) {
     this->computeEigenVec(k);
     // std::cout<<"In computeIndex: computeEigenVec done"<<std::endl;
 
-    std::vector<int> coord (mDim, 0);              // vector of a possible permutations of {-k,...,k} initialized with -k
+    std::vector<int> coord (mDim, 1);              // vector of a possible permutations of {-k,...,k} initialized with -k
     std::vector<double> temp(mDim, 0.);                // subvector of K coresponding to coord
     std::vector< std::vector<int> > res;          // Vector of kept elements in {-k,...,k}^d
 
@@ -700,10 +702,15 @@ void dpp_Dir::computeIndex(const int k) {
     if (mDim == 1) tp = temp[0];
     else tp = std::accumulate(temp.begin(), temp.end(), 1, std::multiplies<double>());
 
-    if (tp == 1) res.push_back(coord);
+    if (tp == 1) {
+      res.push_back(coord);
+      // std::cout<<"Keep this coord: (";
+      // for (int i = 0; i < mDim; i++) std::cout<<coord[i]<<",";
+      // std::cout<<")"<<std::endl;
+    }
     // }
 
-    int totk = 2*k;
+    int totk = k;
 
     // if (!mIsOdd) --totk;
 
@@ -713,7 +720,12 @@ void dpp_Dir::computeIndex(const int k) {
       if (mDim == 1) tp = temp[0];
       else tp = std::accumulate(temp.begin(), temp.end(), 1, std::multiplies<double>());
 
-      if (tp == 1) res.push_back(coord);
+      if (tp == 1) {
+        res.push_back(coord);
+        // std::cout<<"Keep this coord: (";
+        // for (int i = 0; i < mDim; i++) std::cout<<coord[i]<<",";
+        // std::cout<<")"<<std::endl;
+      }
     }
 
     this->setIndex(res);
@@ -813,14 +825,18 @@ NumericMatrix dpp_Eig::computeSample() {
   NumericMatrix res (n, mDim);    // matrix of coordinates
 
   // First point: uniformaly distributed
-  NumericVector x;
+  NumericVector x (mDim);
 
   // if (mIsCube) {
   //   x = runif(mDim, mBinfs[0], mBsups[0]);
   // } else {
   //   for (i = 0; i < mDim; ++i) x.push_back(runif(1, mBinfs[i], mBsups[i])[0]);
   // }
+
   x = runif(mDim, -0.5, 0.5);
+
+  // x.resize(mDim);
+  // x(0) = 0.5173693;
   // res.push_back(x);
   // std::cout<< "Adding first point" << std::endl;
   // for(i = 0; i < mDim; ++i) {
@@ -855,13 +871,24 @@ NumericMatrix dpp_Eig::computeSample() {
     nv += pow(abs(tpcplx), 2.);
   }
 
+  // std::cout<<"v =";
+  // print_vector(v);
+  // std::cout<<std::endl;
+
   nv = pow(nv, 0.5);
+  // std::cout<<"nv ="<<nv<<std::endl;
   // std::cout<<"Record normalized version in the Gram-Schmidt matrices"<<std::endl;
 
-  for (int i = 0; i < mDim; ++i ) {       // Record normalized version in the Gram-Schmidt matrices:
-    etp[i] = v[i]/nv;
+  for (int i = 0; i < n; ++i ) {       // Record normalized version in the Gram-Schmidt matrices:
+    etp[i] = 1/nv*v[i];
+    // etp[i] = std::complex<double>(v[i].real()/nv, v[i].imag()/nv);
     etpstar[i] = std::conj(etp[i]);
   }
+  //
+  // std::cout<<"etp =";
+  // print_vector(etp);
+  // std::cout<<std::endl;
+
   e.push_back(etp); estar.push_back(etpstar);
 
   int tries;

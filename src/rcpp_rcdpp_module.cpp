@@ -33,10 +33,10 @@ RCPP_MODULE(rcdpp_module) {
   //   .constructor<List>()
   // ;
 
-  class_<dpp_Dir0>("dppDir0")
-    .derives<dpp_All>("dppAll")
-    .constructor<List>()
-  ;
+  // class_<dpp_Dir0>("dppDir0")
+  //   .derives<dpp_All>("dppAll")
+  //   .constructor<List>()
+  // ;
 
   class_<dpp_Dir>("dppDir")
     .derives<dpp_All>("dppAll")

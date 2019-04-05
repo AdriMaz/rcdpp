@@ -26,7 +26,8 @@ rdppEigC <- function(nsim = 1, eigen, index, window = NULL, progress = 0, progre
     } else {
       window <- as.boxx(window)
       r <- window$ranges
-      if (ncol(r) != length(index[[1]])) stop("Dimension of 'window' must be equal to size of numeric vectors of 'index'.")
+      d <- ncol(r)
+      if (d != length(index[[1]])) stop("Dimension of 'window' must be equal to size of numeric vectors of 'index'.")
     }
 
 
@@ -57,18 +58,17 @@ rdppEigC <- function(nsim = 1, eigen, index, window = NULL, progress = 0, progre
           ppp(numeric(0), numeric(0), window = as.owin(window))
         } else if (d == 3){
           pp3(numeric(0), numeric(0), numeric(0), window)
-        } else ppx(replicate(d, numeric(0), simplify=FALSE), domain = window)
+        } else ppx(replicate(d, numeric(0), simplify = TRUE), domain = window)
       }
       else {
         # pp <- pp%*%diag(wsc)+wc
-        if (d == 2) {
-          ppp(pp[ ,1], pp[ ,2], window = as.owin(window))
-        } else if (d == 3) {
-          pp3(pp[ ,1], pp[ ,2], pp[ ,3], domain = window)
-        } else ppx(pp, domain = window)
+        # if (d == 2) {
+        #   ppp(pp[ ,1], pp[ ,2], window = as.owin(window))
+        # } else if (d == 3) {
+        #   pp3(pp[ ,1], pp[ ,2], pp[ ,3], domain = window)
+        # } else ppx(pp, domain = window)
+        ppx(pp, domain = window, simplify = TRUE)
       }
-
-
     })
     if (nsim == 1) res <- res[[1]]
 
@@ -171,22 +171,30 @@ rdppC <- function(k, d, nsim = 1, param = NULL, model = c("G", "L1E", "D"), wind
         N <- param[[1]]
         if (length(N) < d) N <- c(N, rep(1, d-N))
 
-        if (sd(N) == 0 | length(N) == 1) {
-          n0 <- N[1]
-          odd <- n0%%2 == 1 ## If n0 is odd -> d-Dirichlet DPP else need an additive operation
-          n0 <- n0%/%2
-          args <- c(args, n0 = n0, odd = odd)
-          k <- n0
-          dpp <- new(dppDir0, args)
-        } else {              ## (prod(N), d)-Dirichlet DPP
-          args <- c(args, N = 0, odd = 0)
-          odd <- N%%2 == 1
-          N <- N%/%2
-          args$N <- N; args$odd <- odd
-          # cat("N =", N, "\n")
-          k <- max(N)
-          dpp <- new(dppDir, args)
-        }
+        # if (sd(N) == 0 | length(N) == 1) {
+        #   n0 <- N[1]
+        #   odd <- n0%%2 == 1 ## If n0 is odd -> d-Dirichlet DPP else need an additive operation
+        #   n0 <- n0%/%2
+        #   args <- c(args, n0 = n0, odd = odd)
+        #   k <- n0
+        #   dpp <- new(dppDir0, args)
+        # } else {              ## (prod(N), d)-Dirichlet DPP
+        #   args <- c(args, N = 0, odd = 0)
+        #   odd <- N%%2 == 1
+        #   N <- N%/%2
+        #   args$N <- N; args$odd <- odd
+        #   # cat("N =", N, "\n")
+        #   k <- max(N)
+        #   dpp <- new(dppDir, args)
+        # }
+        # cat("N =", N,"\n")
+        if (d > 1) args$ic <- args$ic & sd(N) == 0
+        args <- c(args, N = 0)
+        # cat("N =", args$N,"\n")
+        args$N <- N
+        # cat("N =", args$N,"\n")
+        k <- max(N)
+        dpp <- new(dppDir, args)
       }
 
 
@@ -206,12 +214,13 @@ rdppC <- function(k, d, nsim = 1, param = NULL, model = c("G", "L1E", "D"), wind
       } else ppx(replicate(d, numeric(0), simplify=FALSE), domain = window)
     }
     else {
-      # pp <- pp%*%diag(wsc)+wc
-      if (d == 2) {
-        ppp(pp[ ,1], pp[ ,2], window = as.owin(window))
-      } else if (d == 3) {
-        pp3(pp[ ,1], pp[ ,2], pp[ ,3], domain = window)
-      } else ppx(pp, domain = window)
+      # # pp <- pp%*%diag(wsc)+wc
+      # if (d == 2) {
+      #   ppp(pp[ ,1], pp[ ,2], window = as.owin(window))
+      # } else if (d == 3) {
+      #   pp3(pp[ ,1], pp[ ,2], pp[ ,3], domain = window)
+      # } else ppx(pp, domain = window)
+      ppx(pp, domain = window, simplify = TRUE)
     }
 
 

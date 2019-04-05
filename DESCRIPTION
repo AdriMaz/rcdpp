@@ -1,6 +1,6 @@
 Package: rcdpp
 Version: 0.0
-Date: 2018-03-26
+Date: 2019-04-05
 Type: Package
 Title: Determinantal Point Processes Simulation with Rcpp
 Authors@R: c(person("Adrien","Mazoyer", role =c("aut","cre"),email="mazoyer.adrien@courrier.uqam.ca"))
