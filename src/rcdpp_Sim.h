@@ -446,7 +446,8 @@ class dpp_Eig {
 
     std::vector<std::vector<int> > mIndex;   // Indexes in the Mercer's decomposition kept after Bernoulli drawns
 
-    std::vector<double> mEig;
+    // std::vector<double> mEig;
+    NumericVector mEig;
 
     std::vector< std::vector<int> > mIndextot;
 
