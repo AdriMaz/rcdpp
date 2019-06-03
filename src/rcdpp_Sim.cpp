@@ -659,6 +659,7 @@ void dpp_Dir::computeEigenVec(const int k) {
         n0++;
       }
     }
+    // std::vector<double> eig(k, 1.);
     // std::cout<<"Store the vector eig (eig.size() = "<<eig.size()<<")"<<std::endl;
     // std::cout<<"eig.size() = "<<eig.size()<<std::endl;
     // std::cout<<"# of 1 = "<<n1<<std::endl;
@@ -670,7 +671,7 @@ void dpp_Dir::computeEigenVec(const int k) {
       ni = mN[i];
       eig.clear();
       for (int tpk = 0; tpk < k; tpk++) {
-        if (tpk <= ni) {
+        if (tpk < ni) {
           eig.push_back(1.);
           n1++;
         } else {
@@ -692,7 +693,7 @@ void dpp_Dir::computeIndex(const int k) {
     this->computeEigenVec(k);
     // std::cout<<"In computeIndex: computeEigenVec done"<<std::endl;
 
-    std::vector<int> coord (mDim, 1);              // vector of a possible permutations of {-k,...,k} initialized with -k
+    std::vector<int> coord (mDim, 0);              // vector of a possible permutations of {-k,...,k} initialized with -k
     std::vector<double> temp(mDim, 0.);                // subvector of K coresponding to coord
     std::vector< std::vector<int> > res;          // Vector of kept elements in {-k,...,k}^d
 
@@ -727,6 +728,8 @@ void dpp_Dir::computeIndex(const int k) {
         // std::cout<<")"<<std::endl;
       }
     }
+
+    // std::cout<<"computeIndex done: size of res ="<<res.size()<<std::endl;
 
     this->setIndex(res);
 

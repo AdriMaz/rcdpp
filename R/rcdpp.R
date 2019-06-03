@@ -169,7 +169,11 @@ rdppC <- function(k, d, nsim = 1, param = NULL, model = c("G", "L1E", "D"), wind
         stop("'D' model requires 1 parameter ('N').")
       } else {
         N <- param[[1]]
-        if (length(N) < d) N <- c(N, rep(1, d-N))
+        if(sum(N <= 0) > 0) stop("'N' must be a vector of positive number.")
+        if (length(N) > d) stop("Size of 'N' must be non-greater than 'd'.")
+
+
+        if (length(N) < d) N <- c(N, rep(1, d-length(N)))
 
         # if (sd(N) == 0 | length(N) == 1) {
         #   n0 <- N[1]
@@ -188,12 +192,14 @@ rdppC <- function(k, d, nsim = 1, param = NULL, model = c("G", "L1E", "D"), wind
         #   dpp <- new(dppDir, args)
         # }
         # cat("N =", N,"\n")
-        if (d > 1) args$ic <- args$ic & sd(N) == 0
+        if (d > 1) args$ic <- args$ic & (sd(N) == 0)
         args <- c(args, N = 0)
         # cat("N =", args$N,"\n")
         args$N <- N
         # cat("N =", args$N,"\n")
+        warning("Parameter 'k' is ignored and set to max(N) when 'model' is 'D'.")
         k <- max(N)
+
         dpp <- new(dppDir, args)
       }
 
