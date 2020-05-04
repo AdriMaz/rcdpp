@@ -1,7 +1,9 @@
 #ifndef RCPP_RCDPP_MODULE_H
 #define RCPP_RCDPP_MODULE_H
 
-#include "rcdpp_Sim.h"
+#include "rcdpp_Dir.h"
+#include "rcdpp_Eig.h"
+#include "rcdpp_Prod.h"
 
 RCPP_EXPOSED_AS(dpp_All)
 RCPP_EXPOSED_WRAP(dpp_All)

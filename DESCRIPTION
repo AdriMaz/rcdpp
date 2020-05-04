@@ -1,17 +1,17 @@
 Package: rcdpp
 Version: 0.0
-Date: 2019-04-05
+Date: 2020-04-29
 Type: Package
 Title: Determinantal Point Processes Simulation with Rcpp
-Authors@R: c(person("Adrien","Mazoyer", role =c("aut","cre"),email="mazoyer.adrien@courrier.uqam.ca"))
+Authors@R: c(person("Adrien","Mazoyer", role =c("aut","cre"),email="adrien.mazoyer@univ-lille.fr"))
 Author: Adrien Mazoyer [aut, cre]
-Maintainer: Adrien Mazoyer <mazoyer.adrien@courrier.uqam.ca>
-Description: Determinantal Point Processes Simulation with Rcpp
+Maintainer: Adrien Mazoyer <adrien.mazoyer@univ-lille.fr>
+Description: Faster determinantal point processes simulation using Rcpp
 License: GPL
 URL: https://www.r-project.org, https://github.com/AdriMaz/rcdpp
 BugReports: https://github.com/AdriMaz/rcdpp/issues
 Depends: R (>= 3.0.0), spatstat
 Imports: Rcpp (>= 0.12.5), methods
-LinkingTo: Rcpp
+LinkingTo: Rcpp, RcppArmadillo
 RcppModules: rcdpp_module
 NeedsCompilation: yes

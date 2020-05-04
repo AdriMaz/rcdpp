@@ -1,7 +1,8 @@
 useDynLib(rcdpp, .registration=TRUE)
 
 
-export(rdppC, rdppEigC)
+export(rdppC)
 
 import(Rcpp, methods)
+importFrom("stats", "sd")
 import(spatstat)
