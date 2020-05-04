@@ -38,17 +38,14 @@ rdppC <- function(nsim = 1, d, param = NULL, model = c("D", "L1E", "G", "Eig"),
                   domain = boxx(rep(list(0:1), d)),
                   progress = 0, progress.sim = 0,
                   with.kernel = FALSE) {
-
-
   if (d <= 0) stop("'d' must be a positive integer.")
   model <- match.arg(model)
-
-  domain <- as.boxx(domain)
+  
+  if (is.owin(domain)) domain <- as.boxx(domain)
   r <- domain$ranges
   # d <- ncol(r)
   if (d != ncol(r)) stop("Dimension of 'domain' must be equal to 'd'.")
   # }
-
 
   if (progress < 0) stop("'progress' must be a non-negative integer.")
   if (progress.sim < 0) stop("'progress.sim' must be a non-negative integer.")
@@ -70,31 +67,63 @@ rdppC <- function(nsim = 1, d, param = NULL, model = c("D", "L1E", "G", "Eig"),
 
   switch(model,
     'G' = {
-      if(is.null(param)) stop("'G' model requires 3 parameters ('rho', 'alpha' and 'k').")
-      rho <- param[[1]]
-      alpha <- param[[2]]
+      if (is.null(param)) stop("'G' model requires 3 parameters ('rho', 'alpha' and 'k').")
+      if (length(param) != 3) stop("'G' model requires 3 parameters ('rho', 'alpha' and 'k').")
+      npar <- names(param)
+      if (!is.null(npar)) {
+        if (!any(npar == "rho") | !any(npar == "alpha") | !any(npar == "k")) stop("If non-empty, 'names(param)' must contains 'rho', 'alpha' and 'k'.")
+        rho <- param$rho 
+        alpha <- param$alpha
+        k <- param$k
+      } else {
+        rho <- param[[1]]
+        alpha <- param[[2]]
+        k <- param[[3]]
+      }
+      if (rho < 0) stop("'rho' must be non-negative.")
+      if (alpha < 0) stop("'alpha' must be non-negative.")
+      if (floor(k) != k | k <= 0) stop("'k' must be a positive integer.")
+      if (rho > (sqrt(pi)*alpha)^(-d)) stop("'G' model is not valid (see  'help(rdppC)'.")
+      
       # if (length(param) > 3) stop("'G' model requires only 3 parameters ('rho' and 'alpha').")
-      if (rho > (sqrt(pi)*alpha)^(-d)) stop("'G' model is not valid.")
-      args <- c(args, rho = param[[1]], alpha = param[[2]], k = param[[3]])
+      args <- c(args, rho = rho, alpha = alpha, k = k)
 
       dpp <- new(dppGauss, args)
     }
     ,
     'L1E' = {
-      if (is.null(param)) stop("'L1E' model requires 3 parameters ('rho', 'alpha'and 'k').")
-      rho <- param[[1]]
-      alpha <- param[[2]]
-      if (rho > (2*alpha)^(-d)) stop("'L1E' model is not valid.")
-      args <- c(args, rho = rho, alpha = alpha, k = param[[3]])
+      if (is.null(param)) stop("'L1E' model requires 3 parameters ('rho', 'alpha' and 'k').")
+      if (length(param) != 3) stop("'L1E' model requires 3 parameters ('rho', 'alpha' and 'k').")
+      npar <- names(param)
+      if (!is.null(npar)) {
+        if (!any(npar == "rho") | !any(npar == "alpha") | !any(npar == "k")) stop("If non-empty, 'names(param)' must contains 'rho', 'alpha' and 'k'.")
+        rho <- param$rho 
+        alpha <- param$alpha
+        k <- param$k
+      } else {
+        rho <- param[[1]]
+        alpha <- param[[2]]
+        k <- param[[3]]
+      }
+      if (rho < 0) stop("'rho' must be non-negative.")
+      if (alpha < 0) stop("'alpha' must be non-negative.")
+      if (floor(k) != k | k <= 0) stop("'k' must be a positive integer.")
+      
+      if (rho > (2*alpha)^(-d)) stop("'L1E' model is not valid(see 'help(rdppC)').")
+      args <- c(args, rho = rho, alpha = alpha, k = k)
 
       dpp <- new(dppL1Exp, args)
     },
     'D' = {
       if (is.null(param)) stop("'D' model requires 1 parameter ('N').")
-      N <- param[[1]]
-      if(sum(N <= 0) > 0) stop("'N' must be a vector of positive number.")
+      if (length(param) != 1) stop("'D' model requires 1 parameter ('N').")
+      npar <- names(param)
+      if (!is.null(npar)) {
+        if (!any(npar == "N")) stop("If non-empty, 'names(param)' must contains 'N'.")
+        N <- param$N
+      } else N <- param[[1]]
+      if(any(N <= 0)) stop("'N' must be a vector of positive integers.")
       if (length(N) > d) stop("Size of 'N' must be non-greater than 'd'.")
-
 
       if (length(N) < d) {
         warning("Size of 'N' is smaller than 'd': 'N' is completed with '1'.")
@@ -105,15 +134,23 @@ rdppC <- function(nsim = 1, d, param = NULL, model = c("D", "L1E", "G", "Eig"),
       args$N <- N
       dpp <- new(dppDir, args)
     },
+    
     'Eig' = {
       if (is.null(param)) stop("'Eig' model requires 2 parameters ('eigen', and 'index').")
-        # args <- c(args, alpha = 1/(sqrt(pi)*rho^(1/d)))
-      eigen = param[[1]]
-      index = param[[2]]
-      if(!is.matrix(index)) stop("'index' must be a matrix.")
-      if (ncol(index) != d) stop("'index' must have 'd' columns.")
-      if (length(eigen) != nrow(index)) stop("'eigen' size must be equal to 'index' number of rows.")
-      if (sum(eigen > 1) > 0) stop("'eigen' must be a vector of numbers non-greater than 1.")
+      if (length(param) != 2) stop("'Eig' model requires 2 parameters ('eigen', and 'index').")
+      npar <- names(param)
+      if (!is.null(npar)) {
+        if (!any(npar == "eigen") | !any(npar =="index")) stop("If non-empty, 'names(param)' must contains 'eigen' and 'index'.")
+        eigen <- param$eigen
+        index <- param$index
+      } else {
+        eigen = param[[1]]
+        index = param[[2]]
+      }
+      if(!is.matrix(index)) stop("'index' must be a matrix with 'd' columns.")
+      if (ncol(index) != d) stop("'index' must be a matrix with 'd' columns.")
+      if (any(eigen > 1)) stop("'eigen' must be a vector of numbers non-greater than 1.")
+      if (length(eigen) != nrow(index)) stop("'eigen' length must be equal to 'index' number of rows.")
       w <- which(eigen == 0)
       if (length(w) > 0) {
         eigen <- eigen[-w]
