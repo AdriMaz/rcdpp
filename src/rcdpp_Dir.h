@@ -11,8 +11,6 @@ class dpp_Dir : public dpp_Prod {
   private:
     IntegerVector mN;
 
-
-
   public:
 
     dpp_Dir() : dpp_Prod() {
@@ -39,6 +37,7 @@ class dpp_Dir : public dpp_Prod {
     ~dpp_Dir() { };
 
 
+    void computeEigenForKernel();
     void computeIndex();
 
     void computeEigenDir();
@@ -50,6 +49,13 @@ class dpp_Dir : public dpp_Prod {
       if (k < mN[i]) res = 1.;
       else res = 0.;
       return res;
+    };
+
+
+    std::complex<double> computeExactKernel(const NumericVector& X, const NumericVector& Y){
+
+      return computeKernel(X,Y);
+
     };
 
 

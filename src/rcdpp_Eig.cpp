@@ -9,7 +9,7 @@ void dpp_Eig::computeIndex() {
 
   // std::cout<<"In ComputeIndex"<<std::endl;
   if (mIsProj) {
-    this->setIndex(mIndextot);
+    setIndex(mIndextot);
   } else {
 
     std::vector< std::vector<int> > res;
@@ -31,7 +31,7 @@ void dpp_Eig::computeIndex() {
       }
     }
 
-    this->setIndex(res);
+    setIndex(res);
   }
 }
 

@@ -1,7 +1,7 @@
 useDynLib(rcdpp, .registration=TRUE)
 
 
-export(rdppC)
+export(rdppC, computeKernel, computePCF)
 
 import(Rcpp, methods)
 importFrom("stats", "sd")

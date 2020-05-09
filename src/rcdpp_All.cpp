@@ -9,6 +9,13 @@ void print_vector(std::vector<T> v) {
   Rcout << std::endl;
 }
 
+void print_vector(NumericVector v) {
+  int n = v.size();
+  for (int i = 0; i < n; ++i) Rcout << v[i] << " ";
+  Rcout << std::endl;
+}
+
+
 
 bool next_variation(std::vector<int>::iterator first, std::vector<int>::iterator last, const int min, const int max) {
 // bool next_variation(std::vector<int> vect,  const int max) {
@@ -106,7 +113,7 @@ List dpp_All::computeListSamples(const int nsim) {
   if (mIsProj) {    // If projection DPP: compute index only once
 
     // std::cout<<"Call computeIndex (Proj. case)"<<std::endl;
-    this->computeIndex();
+    computeIndex();
     // std::cout<<"computeIndex done"<<std::endl;
 
     for (i = 0; i < nsim; ++i) {
@@ -116,7 +123,7 @@ List dpp_All::computeListSamples(const int nsim) {
         if ((i+1)%mProgSim == 0) Rcout << "Compute sample n° " << i+1 << "\n";
       }
 
-      res = this->computeSample();   // Compute sample
+      res = computeSample();   // Compute sample
 
       for (l = 0; l < res.nrow(); ++l){
         x = res(l,_);
@@ -142,20 +149,20 @@ List dpp_All::computeListSamples(const int nsim) {
     }
   } else {
   // std::cout<< "Compute Eigen" << std::endl;
-    // this->computeEigenVec();
+    // computeEigenVec();
     // std::cout<< "Done -> mEig.size = " << mEig.size() << std::endl;
     // print_vector(mEig);
 
     for (i = 0; i < nsim; ++i) {
 
-      this->computeIndex();
+      computeIndex();
 
       if(mProgSim > 0) {
         // if ((i+1)%mProgSim == 0) std::cout << "Compute sample n° " << i+1 << std::endl;
         if ((i+1)%mProgSim == 0) Rcout << "Compute sample n° " << i+1 << "\n";
       }
       // std::cout << "Sim n° " << i+1 << std::endl;
-      res = this->computeSample();   // Compute sample
+      res = computeSample();   // Compute sample
 
       for (l = 0; l < res.nrow(); ++l){
         x = res(l,_);
@@ -175,7 +182,7 @@ List dpp_All::computeListSamples(const int nsim) {
         RES.push_back(res);       // Stock new point process
       }
       // std::cout << "Before reset  mIndex.size() = " << mIndex.size() << std::endl;
-      this->resetIndex();       // reset mIndex
+      resetIndex();       // reset mIndex
       // std::cout << "Reset Index -> mIndex.size() = " << mIndex.size() << std::endl;
     }
   }
@@ -190,7 +197,7 @@ NumericMatrix dpp_All::computeSample() {
 
   int rejectmax = 1e4;          // Max number of repetition for reject algorithm
   // std::cout<< "Compute Index" << std::endl;
-  // if (!mIsProj) this->computeIndex(k);
+  // if (!mIsProj) computeIndex(k);
   int n = mIndex.size();
   // std::cout<< "Number of points to be computed " << n << std::endl;
   // print_vector(mIndex);
@@ -362,6 +369,75 @@ NumericMatrix dpp_All::computeSample() {
 
   }
 
+  return res;
+
+}
+
+
+List dpp_All::computeOnlyKernelR(const List& PP) {
+
+  int np = PP.size();
+  List RES;
+  // if (!mIsEigSet) computeEigenForKernel();
+  for (int i=0; i < np; ++i) {
+    NumericMatrix pp = PP[i];
+    // Rcout<<"nrow(pp) ="<<pp.nrow()<<" ; ncol(pp) ="<<pp.ncol()<<"\n";
+    // for (int j =0; j < pp.nrow(); ++j) {
+    //   NumericVector tp = pp(j,_);
+    //   print_vector(tp);
+    // }
+
+    ComplexMatrix tpres = computeKernelR(pp);
+    RES.push_back(tpres);
+  }
+  return RES;
+}
+
+List dpp_All::computePCFR(const List& PP) {
+
+  int np = PP.size();
+  List RES;
+  // if (!mIsEigSet) computeEigenForKernel();
+  for (int i=0; i < np; ++i) {
+    NumericMatrix pp = PP[i];
+    // Rcout<<"nrow(pp) ="<<pp.nrow()<<" ; ncol(pp) ="<<pp.ncol()<<"\n";
+    // for (int j =0; j < pp.nrow(); ++j) {
+      // NumericVector tp = pp(j,_);
+      // print_vector(tp);
+    // }
+
+    NumericMatrix tpres = computePCF(pp);
+    RES.push_back(tpres);
+  }
+  return RES;
+}
+
+
+NumericMatrix dpp_All::computePCF(const NumericMatrix& PP) {
+
+  int np = PP.nrow();
+  NumericMatrix res (np,np);
+  ComplexMatrix K = computeKernelR(PP);
+  // NumericVector tpX (mDim);
+  // NumericVector tpY (mDim);
+  Rcomplex tpc;
+  double tp;
+  // diag.r = mInt; diag.i = 0.;
+
+
+  for (int i = 0; i < np; ++i) {
+    res(i,i) = 0.;
+    NumericVector tpX = PP(i,_);
+    for (int j = 0; j < i; ++j) {
+      // if (j != i) {
+        // tpY = PP(j,_);
+        tpc = K(i,j);
+        tp = pow(tpc.r,2)+pow(tpc.i,2);
+        tp /= pow(mInt,2);
+        res(i,j) = tp; res(j,i) = tp;
+      // }
+    }
+  }
   return res;
 
 }

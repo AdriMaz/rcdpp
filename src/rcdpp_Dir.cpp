@@ -15,7 +15,7 @@ void dpp_Dir::computeEigenDir() {
 
     std::vector<double> eig(mK, 1.);
 
-    this->setEigenDir(eig, 0);
+    setEigenDir(eig, 0);
 
   } else {
     for (int i = 0; i < mDim; ++i) {
@@ -31,7 +31,7 @@ void dpp_Dir::computeEigenDir() {
         }
       }
 
-      this->setEigenDir(eig, i);
+      setEigenDir(eig, i);
 
       }
     }
@@ -42,7 +42,7 @@ void dpp_Dir::computeEigenDir() {
 void dpp_Dir::computeIndex() {
 
     // std::cout<<"In computeIndex: call computeEigenVec"<<std::endl;
-    // this->computeEigenDir();
+    // computeEigenDir();
     // std::cout<<"In computeIndex: computeEigenVec done"<<std::endl;
 
     std::vector<int> coord (mDim, 0);              // vector of a possible permutations of {0,...,k-1}^d initialized with 0^d
@@ -52,7 +52,7 @@ void dpp_Dir::computeIndex() {
     double tp = 1;
     int curk = 0;
     // select(coord, mEig, temp);
-    this->select(coord, temp);
+    select(coord, temp);
     if (mDim == 1) tp = temp[0];
     else tp = std::accumulate(temp.begin(), temp.end(), 1, std::multiplies<double>());
 
@@ -76,7 +76,7 @@ void dpp_Dir::computeIndex() {
     while (next_variation(coord.begin(), coord.end(), 0, max)) {
       ++curk;
     // while (next_variation(coord, totk)) {
-      this->select(coord, temp);
+      select(coord, temp);
 
       if (mDim == 1) tp = temp[0];
       else tp = std::accumulate(temp.begin(), temp.end(), 1, std::multiplies<double>());
@@ -95,8 +95,47 @@ void dpp_Dir::computeIndex() {
 
     // std::cout<<"computeIndex done: size of res ="<<res.size()<<std::endl;
 
-    this->setIndex(res);
+    setIndex(res);
     if (mWithKernel & !mIsEigSet) mIsEigSet = true;
+    // std::cout<<"computeIndex done."<<std::endl;
+
+}
+
+
+void dpp_Dir::computeEigenForKernel() {
+
+
+    std::vector<int> coord (mDim, 0);              // vector of a possible permutations of {0,...,k-1}^d initialized with 0^d
+    std::vector<double> temp(mDim, 0.);                // subvector of K coresponding to coord
+    std::vector< std::vector<int> > res;          // Vector of kept elements in {-k,...,k}^d
+
+    double tp = 1;
+    int curk = 0;
+    // select(coord, mEig, temp);
+    select(coord, temp);
+    if (mDim == 1) tp = temp[0];
+    else tp = std::accumulate(temp.begin(), temp.end(), 1, std::multiplies<double>());
+
+    mEig[curk] = tp;
+
+
+    int max = mK-1;
+
+    while (next_variation(coord.begin(), coord.end(), 0, max)) {
+      ++curk;
+    // while (next_variation(coord, totk)) {
+      select(coord, temp);
+
+      if (mDim == 1) tp = temp[0];
+      else tp = std::accumulate(temp.begin(), temp.end(), 1, std::multiplies<double>());
+
+      mEig[curk] = tp;
+
+    }
+
+    // std::cout<<"computeIndex done: size of res ="<<res.size()<<std::endl;
+
+    if (!mIsEigSet) mIsEigSet = true;
     // std::cout<<"computeIndex done."<<std::endl;
 
 }

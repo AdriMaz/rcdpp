@@ -129,11 +129,16 @@ class dpp_All {
     //   return rbinom(k, n, p);
     // };
     // virtual void computeEigen(const std::vector<int> K) = 0;
+    // virtual void computeEigenForKernel() = 0;
     virtual void computeIndex() = 0 ;
 
     // virtual NumericVector computeKernel() = 0;
 
     virtual ComplexMatrix computeKernelR(const NumericMatrix& PP) = 0;
+    List computeOnlyKernelR(const List& PP);
+    NumericMatrix computePCF(const NumericMatrix& PP);
+    List computePCFR(const List& PP);
+
 
     NumericMatrix computeSample();
     List computeListSamples(const int nsim);
@@ -144,6 +149,7 @@ class dpp_All {
 
 
 template <typename T> void print_vector(std::vector<T> v);
+void print_vector(NumericVector v);
 
 
 bool next_variation(std::vector<int>::iterator first, std::vector<int>::iterator last, const int min, const int max) ;

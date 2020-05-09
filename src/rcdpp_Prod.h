@@ -40,7 +40,6 @@ class dpp_Prod : public dpp_All {
 
     dpp_Prod(List args) : dpp_All(args),
                           mK(as<int>(args["k"])) {
-
                             if (!mIsCube) mEigDir.resize(mDim);
                             else mEigDir.resize(1);
                             // std::cout<<"In constructorof dpp_Prod: computation of eigenvalues"<<std::endl;
@@ -92,13 +91,14 @@ class dpp_Prod : public dpp_All {
       return res;
     };
 
-
+    virtual void computeEigenForKernel();
     virtual void computeEigenDir();
 
     virtual void computeIndex();
 
     virtual double computeEigen(const int k, int i) = 0;
 
+    virtual std::complex<double> computeExactKernel(const NumericVector& X, const NumericVector& Y) = 0;
     virtual std::complex<double> computeKernel(const NumericVector& X, const NumericVector& Y);
     ComplexMatrix computeKernelR(const NumericMatrix& PP);
 
@@ -136,7 +136,8 @@ class dpp_Gauss : public dpp_Prod {
                             // std::cout << "Rho  = " << mRho << std::endl;
                             // std::cout << "Alpha = " << mAlpha << std::endl;
                             // std::cout << "Dim = " << mDim << std::endl;
-                            computeEigenDir();
+                            if (mK > 0) computeEigenDir();
+                            else mInt = mRho;
                          };
 
 
@@ -146,6 +147,17 @@ class dpp_Gauss : public dpp_Prod {
       double res;
       double wsc = mWscale[i];
       res = pow(mRho, 1./mDim)*sqrt(M_PI)*mAlpha*exp(-pow(k/wsc*mAlpha*M_PI,2));
+      return res;
+    };
+
+    std::complex<double> computeExactKernel(const NumericVector& X, const NumericVector& Y) {
+
+      double norm = 0.;
+      double tpres;
+      for (int i =0; i < mDim; ++i) norm += pow(X[i]-Y[i], 2);
+
+      tpres = mRho*exp(-norm/pow(mAlpha, 2));
+      std::complex<double> res (tpres, 0.);
       return res;
     };
 
@@ -177,7 +189,10 @@ class dpp_L1Exp : public dpp_Prod {
                          mAlpha(as<double>(args["alpha"])) {
       mIsProj = false;
       if (mWithKernel) mEig.resize(pow(2*mK+1, mDim));
-      computeEigenDir();
+      // Rcout<<"Call computeEigenDir\n";
+      if (mK > 0) computeEigenDir();
+      else mInt = mRho;
+      // Rcout<<"computeEigenDir done\n";
     };
 
 
@@ -196,6 +211,16 @@ class dpp_L1Exp : public dpp_Prod {
       double res;
       double wsc = mWscale[i];
       res = pow(mRho, 1./mDim)*2*mAlpha/(1.+pow(2*M_PI*mAlpha*k/wsc, 2));
+      return res;
+    };
+
+    std::complex<double> computeExactKernel(const NumericVector& X, const NumericVector& Y) {
+
+      double norm = 0.;
+      double tpres;
+      for (int i =0; i < mDim; ++i) norm += std::abs(X[i]-Y[i]);
+      tpres = mRho*exp(-norm/mAlpha);
+      std::complex<double> res (tpres, 0.);
       return res;
     };
 

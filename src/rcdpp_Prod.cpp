@@ -2,6 +2,44 @@
 
 using namespace Rcpp;
 
+
+void dpp_Prod::computeEigenForKernel() {
+
+
+      std::vector<int> coord (mDim, 0);               // vector of a possible permutations of {-k,...,k}
+      int curk = 0;
+
+
+      double tp;
+
+      std::vector<double> temp (mDim, 0.);          // vector of eigenvalues coresponding to coord
+      select(coord, temp);
+      if(mDim == 1) tp = temp[0];
+      else tp = std::accumulate(temp.begin(), temp.end(), 1., std::multiplies<double>());    // Eigenvalue associated to  coord
+
+      // if (mWithKernel & !mIsEigSet) {
+      mEig[curk] = tp;
+      if (tp > 0) mInt = tp;
+      // }
+      // std::cout << "Corresponding eigenvalue.: " << tp << std::endl;
+
+      // if (mWithKernel) mEig.push_back(tp);
+      // Repeat for all the permutations
+      int totk = 2*mK;
+      while (next_variation(coord.begin(), coord.end(), 0, totk)) {
+        ++curk;
+        select(coord, temp);
+        if(mDim == 1) tp = temp[0];
+        else tp = std::accumulate(temp.begin(), temp.end(), 1., std::multiplies<double>());
+
+        mEig[curk] = tp;
+        if (tp > 0) mInt+=tp;
+      }
+
+      if (!mIsEigSet) mIsEigSet = true;
+
+}
+
 void dpp_Prod::computeEigenDir() {
   // std::cout<<"In computeEigenDir"<<std::endl;
   std::vector<double> eig;
@@ -24,7 +62,7 @@ void dpp_Prod::computeEigenDir() {
       //   curk++;
       // }
     }
-    this->setEigenDir(eig, 0);
+    setEigenDir(eig, 0);
     // sumEig = std::accumulate(eig.begin(), eig.end(), 0.);
     // std::cout<<"sum(eig) = " << sumEig << std::endl;
   } else {
@@ -46,16 +84,16 @@ void dpp_Prod::computeEigenDir() {
         wscm = wsc;
       }
       // tpInt = std::accumulate(mEig.begin(), mEig.end(), 0.);
-      this->setEigenDir(eig, i);
+      setEigenDir(eig, i);
     }
   }
-  // this->setInt(tpInt);
+  // setInt(tpInt);
 }
 
 
 void dpp_Prod::computeIndex() {
 
-  // if (mEigDir.size() == 0) this->computeEigenDir();
+  // if (mEigDir.size() == 0) computeEigenDir();
 
     std::vector<int> coord (mDim, 0);               // vector of a possible permutations of {-k,...,k}
     std::vector< std::vector<int> > res;          // Vector of kept elements in {-k,...,k}^d
@@ -68,7 +106,7 @@ void dpp_Prod::computeIndex() {
     double tp;
 
     std::vector<double> temp (mDim, 0.);          // vector of eigenvalues coresponding to coord
-    this->select(coord, temp);
+    select(coord, temp);
     if(mDim == 1) tp = temp[0];
     else tp = std::accumulate(temp.begin(), temp.end(), 1., std::multiplies<double>());    // Eigenvalue associated to  coord
 
@@ -93,7 +131,7 @@ void dpp_Prod::computeIndex() {
       // std::cout << "Next permutation" <<std::endl;
       // ++cpt;
       // select(coord, mEig, temp);
-      this->select(coord, temp);
+      select(coord, temp);
       // std::cout<<"Proposed point:  ("<<temp[0]<<" , "<<temp[1]<<")"<<std::endl;
       // std::cout << "With coord.: ("<<coord[0]<<" , "<<coord[1]<<")"<<std::endl;
       if(mDim == 1) tp = temp[0];
@@ -123,73 +161,79 @@ void dpp_Prod::computeIndex() {
 
 
       // }
-    this->setIndex(res);
+    setIndex(res);
     if (mWithKernel & !mIsEigSet) mIsEigSet = true;
-    // this->setInt(tpInt);
+    // setInt(tpInt);
 
 }
 
 
 ComplexMatrix dpp_Prod::computeKernelR(const NumericMatrix& PP) {
 
-  int np = PP.nrow();
-  ComplexMatrix res (np,np);
-  NumericVector tpX (mDim);
+    if (!mIsEigSet & (mK > 0)) computeEigenForKernel();
 
-  Rcomplex diag, tpR;
-  diag.r = mInt; diag.i = 0.;
-  std::complex<double> tp;
+    int np = PP.nrow();
+    ComplexMatrix res (np,np);
+    NumericVector tpX (mDim);
 
-  for (int i = 0; i < np; ++i) {
-    res(i,i) = diag;
-    tpX = PP(i,_);
-    for (int j = 0; j < i; ++j) {
-      // if (j != i) {
-        // tpY = PP(j,_);
-        tp = computeKernel(tpX, PP(j,_));
-        tpR.r = tp.real(); tpR.i = tp.imag();
-        res(i,j) = tpR;
-        tpR.i *= -1;
-        res(j,i) = tpR;
-      // }
+    Rcomplex diag, tpR;
+    diag.r = mInt; diag.i = 0.;
+    std::complex<double> tp;
+
+    for (int i = 0; i < np; ++i) {
+      res(i,i) = diag;
+      tpX = PP(i,_);
+      for (int j = 0; j < i; ++j) {
+        // if (j != i) {
+          // tpY = PP(j,_);
+          tp = computeKernel(tpX, PP(j,_));
+          tpR.r = tp.real(); tpR.i = tp.imag();
+          res(i,j) = tpR;
+          tpR.i *= -1;
+          res(j,i) = tpR;
+        // }
+      }
     }
-  }
+
   return res;
 
 }
 
+
 std::complex<double> dpp_Prod::computeKernel(const NumericVector& X, const NumericVector& Y) {
 
-  // int n = mIndextot.size();
-  // std::vector<int> K;
-  // int n = 2*mK;
-  int minK = -mK;
-  int maxK = mK;
-  std::vector<int> coord (mDim, minK);               // vector of a possible permutations of {-k,...,k}
   std::complex<double> res = 0.;
-  std::complex<double> tpcx;
+  if (mK > 0){
+    int minK = -mK;
+    int maxK = mK;
+    std::vector<int> coord (mDim, minK);               // vector of a possible permutations of {-k,...,k}
 
-  int curK = 0;
-  double tpEig;
+    std::complex<double> tpcx;
 
-  NumericVector Z (mDim);
+    int curK = 0;
+    double tpEig;
 
-  int i;
-  // double tp;
+    NumericVector Z (mDim);
 
-  for (i = 0; i < mDim; ++i) Z[i] = X[i]-Y[i];
+    int i;
+    // double tp;
 
-  tpEig = mEig[curK];
-  tpcx = tpEig*computeFourierbasis(coord, Z, mWscale);
-  res += tpcx;
+    for (i = 0; i < mDim; ++i) Z[i] = X[i]-Y[i];
 
-  while (next_variation(coord.begin(), coord.end(), minK, maxK)) {
-    ++curK;
     tpEig = mEig[curK];
     tpcx = tpEig*computeFourierbasis(coord, Z, mWscale);
     res += tpcx;
 
+    while (next_variation(coord.begin(), coord.end(), minK, maxK)) {
+      ++curK;
+      tpEig = mEig[curK];
+      tpcx = tpEig*computeFourierbasis(coord, Z, mWscale);
+      res += tpcx;
 
+
+    }
+  } else {
+    res = computeExactKernel(X,Y);
   }
   // res.r = tp.real(); res.i = tp.imag();
   return res;

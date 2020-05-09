@@ -5,7 +5,8 @@ RCPP_MODULE(rcdpp_module) {
   class_<dpp_All>("dppAll")
     // .constructor<List>()
     .method("simulate", &dpp_All::computeListSamples, "Simulate DPPs.")
-    // .method("kernel", &dpp_All:computeKernelR, "Evaluate kernels on point configuration.")
+    .method("kernel", &dpp_All::computeOnlyKernelR, "Evaluate kernel on point configuration.")
+    .method("pcf", &dpp_All::computePCFR, "Evaluate pcf on point configuration.")
     // .field("eig", &dppAll::mEig, "eigen values")
     // .method("eigen", &dpp_All::getEigen, "get eigen values")
     // .method("index", &dpp_All::getIndex, "get index lattice")
@@ -15,7 +16,7 @@ RCPP_MODULE(rcdpp_module) {
   class_<dpp_Prod>("dppProd")
     .derives<dpp_All>("dppAll")
     // .constructor<List>()
-    .method("eigen", &dpp_Prod::getEigen, "get eigen values")
+    // .method("eigen", &dpp_Prod::getEigen, "get eigen values")
   ;
 
   class_<dpp_Gauss>("dppGauss")
