@@ -27,7 +27,7 @@ class dpp_Eig : public dpp_All {
     // std::vector<double> mEig;
     // std::vector<double> mEig;
 
-    std::vector<std::vector<int>> mIndextot;
+    std::vector<std::vector<int> > mIndextot;
 
     // void setIndex(const std::vector<std::vector<int> >& index) {
     //   mIndex.resize(index.size());
