@@ -34,7 +34,7 @@ class dpp_Dir : public dpp_Prod {
     };
 
 
-    ~dpp_Dir() { };
+    // ~dpp_Dir() { };
 
 
     void computeEigenForKernel();

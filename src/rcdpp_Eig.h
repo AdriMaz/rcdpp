@@ -79,7 +79,7 @@ class dpp_Eig : public dpp_All {
 
     };
 
-    ~dpp_Eig() { };
+    // ~dpp_Eig() { };
 
 
     // void computeEigenVec(const int k) {  };

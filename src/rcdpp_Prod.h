@@ -52,7 +52,7 @@ class dpp_Prod : public dpp_All {
       // else mEig.resize(1);
     // };
 
-    ~dpp_Prod() { };
+    // ~dpp_Prod() { };
 //
 
     // NumericMatrix getEigen() {
@@ -141,7 +141,7 @@ class dpp_Gauss : public dpp_Prod {
                          };
 
 
-    ~dpp_Gauss() { };
+    // ~dpp_Gauss() { };
 
     double computeEigen(const int k, int i) {
       double res;
@@ -203,7 +203,7 @@ class dpp_L1Exp : public dpp_Prod {
     //
     //  };
 
-    ~dpp_L1Exp() { };
+    // ~dpp_L1Exp() { };
 
 
     // void computeEigen(const int k);

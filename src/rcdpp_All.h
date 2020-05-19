@@ -101,7 +101,7 @@ class dpp_All {
         // // mRho(rho),
         //                               mDim(dim) { };
 
-        ~dpp_All() { };
+        virtual ~dpp_All() { };
 
     // NumericVector getEigen(const int j) {
     //   // std::cout << " Call computeEigenVec"
