@@ -348,7 +348,7 @@ build <- function(d, param = NULL, model = c("D", "L1E", "G", "Eig"),
       w <- which(eigen == 0)
       if (length(w) > 0) {
         eigen <- eigen[-w]
-        index <- index[-w]
+        index <- index[-w, ]
       }
       args <- c(args, eigenval = 0, index = 0,
                 ip = sum(eigen == 1) == length(eigen))
