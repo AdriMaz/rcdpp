@@ -13,27 +13,40 @@ RCPP_MODULE(rcdpp_module) {
     // .method("binom", &dpp_All::test_binom, "Test Rcpp::rbinom")
   ;
 
-  class_<dpp_Prod>("dppProd")
+  class_<dpp_Comb>("dppComb")
     .derives<dpp_All>("dppAll")
-    // .constructor<List>()
-    // .method("eigen", &dpp_Prod::getEigen, "get eigen values")
+    .constructor<List>()
+    .method("eigen", &dpp_Comb::getEigen, "get eigen values")
+    // .method("exactkernel", &dpp_Comb::computeOnlyExactKernelR, "Evaluate exact kernel on point configuration.")
   ;
 
-  class_<dpp_Gauss>("dppGauss")
-    .derives<dpp_Prod>("dppProd")
-    .constructor<List>()
-    // .method("simulate", &dppGauss::computeListSamples, "Simulate Gaussian DPPs.")
-    // .method("test", &dppGauss::testSample, "Test sample function.")
-    // .method("eigen", &dppGauss::computeEigen, "Compute Eigenvalues.")
-  ;
+  // class_<dpp_Prod>("dppProd")
+  //   .derives<dpp_Comb>("dppComb")
+  //   // .constructor<List>()
+  //   // .method("eigen", &dpp_Prod::getEigen, "get eigen values")
+  // ;
 
-  class_<dpp_L1Exp>("dppL1Exp")
-    .derives<dpp_Prod>("dppProd")
-    .constructor<List>()
-  ;
+  // class_<dpp_Sum>("dppSum")
+  //   .derives<dpp_Comb>("dppComb")
+  //   // .constructor<List>()
+  //   // .method("eigen", &dpp_Prod::getEigen, "get eigen values")
+  // ;
+
+  // class_<dpp_Gauss>("dppGauss")
+  //   .derives<dpp_Prod>("dppProd")
+  //   .constructor<List>()
+  //   // .method("simulate", &dppGauss::computeListSamples, "Simulate Gaussian DPPs.")
+  //   // .method("test", &dppGauss::testSample, "Test sample function.")
+  //   // .method("eigen", &dppGauss::computeEigen, "Compute Eigenvalues.")
+  // ;
+  //
+  // class_<dpp_L1Exp>("dppL1Exp")
+  //   .derives<dpp_Prod>("dppProd")
+  //   .constructor<List>()
+  // ;
 
   class_<dpp_Dir>("dppDir")
-    .derives<dpp_Prod>("dppProd")
+    .derives<dpp_Comb>("dppComb")
     .constructor<List>()
   ;
 

@@ -46,6 +46,7 @@ class dpp_Eig : public dpp_All {
     // dpp_Eig(List args) : dpp_All(args)
     dpp_Eig(List args) : dpp_All(args)
                         {
+                          mIsProj = as<bool>(args["ip"]);
                           mIsEigSet = true;
                           // std::cout<<"Read 'Wscale'"<<std::endl;
                           // mWscale = args["Wscale"];

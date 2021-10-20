@@ -3,19 +3,18 @@
 
 #include "rcdpp_Dir.h"
 #include "rcdpp_Eig.h"
-#include "rcdpp_Prod.h"
 
 RCPP_EXPOSED_AS(dpp_All)
 RCPP_EXPOSED_WRAP(dpp_All)
 
-RCPP_EXPOSED_AS(dpp_Prod)
-RCPP_EXPOSED_WRAP(dpp_Prod)
+RCPP_EXPOSED_AS(dpp_Comb)
+RCPP_EXPOSED_WRAP(dpp_Comb)
 
-RCPP_EXPOSED_AS(dpp_Gauss)
-RCPP_EXPOSED_WRAP(dpp_Gauss)
-
-RCPP_EXPOSED_AS(dpp_L1Exp)
-RCPP_EXPOSED_WRAP(dpp_L1Exp)
+// RCPP_EXPOSED_AS(dpp_Sum)
+// RCPP_EXPOSED_WRAP(dpp_Sum)
+//
+// RCPP_EXPOSED_AS(dpp_Prod)
+// RCPP_EXPOSED_WRAP(dpp_Prod)
 
 // RCPP_EXPOSED_AS(dpp_MR)
 // RCPP_EXPOSED_WRAP(dpp_MR)

@@ -4,7 +4,7 @@ using namespace Rcpp;
 
 void dpp_Eig::computeIndex() {
 
-  // std::vector<int> coord (mDim, 0);              // vector of a possible permutations of {-k,...,k} initialized with -k
+  std::vector<int> coord (mDim, 0);              // vector of a possible permutations of {-k,...,k} initialized with -k
   // std::vector<double> temp(mDim, 0.);                // subvector of K coresponding to coord
 
   // std::cout<<"In ComputeIndex"<<std::endl;

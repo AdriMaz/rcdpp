@@ -1,10 +1,10 @@
 #ifndef RCDPP_ALL_H
 #define RCDPP_ALL_H
 
-#define _USE_MATH_DEFINES     // get M_PI
-
+// #define _USE_MATH_DEFINES     // get M_PI
+#include "MATH_Kernel1D.h"
 // #include <Rcpp.h>
-#include <RcppArmadillo.h>
+// #include <RcppArmadillo.h>
 // #include <math.h>
 // #include <iostream>
 // #include <vector>
@@ -94,6 +94,8 @@ class dpp_All {
                             mWscale = args["Wscale"];
                             mWcenter = args["Wcenter"];
 
+                            // std::cout<<"Size of args :"<<args.size()<<std::endl;
+
                             mIsEigSet = false;
                           };
 
@@ -135,6 +137,8 @@ class dpp_All {
     // virtual NumericVector computeKernel() = 0;
 
     virtual ComplexMatrix computeKernelR(const NumericMatrix& PP) = 0;
+    // virtual ComplexMatrix computeExactKernelR(const NumericMatrix& PP) = 0;
+
     List computeOnlyKernelR(const List& PP);
     NumericMatrix computePCF(const NumericMatrix& PP);
     List computePCFR(const List& PP);
@@ -152,7 +156,7 @@ template <typename T> void print_vector(std::vector<T> v);
 void print_vector(NumericVector v);
 
 
-bool next_variation(std::vector<int>::iterator first, std::vector<int>::iterator last, const int min, const int max) ;
+bool next_variation(std::vector<int>::iterator first, std::vector<int>::iterator last, const int init, const int max) ;
 std::complex<double> computeFourierbasis(const std::vector<int>& k, const NumericVector& x, const NumericVector& boxlengths) ;
 std::complex<double> computeFourierbasis(const std::vector<int>& k, const NumericVector& x) ;
 

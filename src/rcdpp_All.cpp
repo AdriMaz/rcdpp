@@ -17,7 +17,7 @@ void print_vector(NumericVector v) {
 
 
 
-bool next_variation(std::vector<int>::iterator first, std::vector<int>::iterator last, const int min, const int max) {
+bool next_variation(std::vector<int>::iterator first, std::vector<int>::iterator last, const int init, const int end) {
 // bool next_variation(std::vector<int> vect,  const int max) {
     // std::vector<int>::iterator first (vect.begin());
     // std::vector<int>::iterator last (vect.end());
@@ -32,23 +32,27 @@ bool next_variation(std::vector<int>::iterator first, std::vector<int>::iterator
 
     // Check if I can just increase it
     // std::cout<<max<<"-"<<*i<<" = "<<max-(*i)<<std::endl;
-    if (*i < max) {
+    bool croiss = init < end;
+    if (*i != end) {
     // if (max-(*i) > eps) {
       // std::cout<<"First 'if' satisfied"<<std::endl;
-       ++(*i);   // Increase this element and return
+      if (croiss) ++(*i);   // Increase this element and return
+      else --(*i);
        return true;
-     }
+    }
 
     // Find the rightmost element to increase
     while (i != first) {
       // std::cout<<"In 'while' loop"<<std::endl;
-      *i = min; // reset the right-hand element
+      *i = init; // reset the right-hand element
       --i; // point to the left adjacent
       // std::cout<<max<<"-"<<*i<<" = "<<max-(*i)<<std::endl;
-      if (*i < max) {
-        // std::cout<<"'if' in the 'while' loop is satisfied"<<std::endl;
-        ++(*i);   // Increase this element and return
-        return true;
+      if (*i != end) {
+      // if (max-(*i) > eps) {
+        // std::cout<<"First 'if' satisfied"<<std::endl;
+        if (croiss) ++(*i);   // Increase this element and return
+        else --(*i);
+         return true;
       }
     }
        // std::cout<<"Skip the 'while' loop"<<std::endl;
@@ -154,7 +158,7 @@ List dpp_All::computeListSamples(const int nsim) {
     // print_vector(mEig);
 
     for (i = 0; i < nsim; ++i) {
-
+      // std::cout<< "Calling compute Index" << std::endl;
       computeIndex();
 
       if(mProgSim > 0) {
@@ -199,7 +203,7 @@ NumericMatrix dpp_All::computeSample() {
   // std::cout<< "Compute Index" << std::endl;
   // if (!mIsProj) computeIndex(k);
   int n = mIndex.size();
-  // std::cout<< "Number of points to be computed " << n << std::endl;
+  std::cout<< "Number of points to be computed " << n << std::endl;
   // print_vector(mIndex);
   int i, j, it;
 
@@ -227,7 +231,7 @@ NumericMatrix dpp_All::computeSample() {
   // }
   res(0,_) = x;
 
-  // std::cout<<"Done"<<std::endl;
+  std::cout<<"Done"<<std::endl;
   if (n == 1) return res;
 
   std::vector<int> K(mDim);                   // Element of vector index
@@ -392,6 +396,8 @@ List dpp_All::computeOnlyKernelR(const List& PP) {
   }
   return RES;
 }
+
+
 
 List dpp_All::computePCFR(const List& PP) {
 
