@@ -304,7 +304,7 @@ ComplexMatrix dpp_Comb::computeKernelR(const NumericMatrix& PP) {
     NumericVector tpX (mDim);
 
     Rcomplex diag, tpR;
-    std::cout<<"mInt ="<<mInt<<std::endl;
+    // std::cout<<"mInt ="<<mInt<<std::endl;
     diag.r = mInt; diag.i = 0.;
     std::complex<double> tp;
 
