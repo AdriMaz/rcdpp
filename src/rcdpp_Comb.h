@@ -63,14 +63,14 @@ class dpp_Comb : public dpp_All {
 
 
                             if (mWithKernel) {
-                              std::cout<<"Redim mEig"<<std::endl;
+                              // std::cout<<"Redim mEig"<<std::endl;
                               if (mK >= 0) mEig.resize(pow(2*mK+1, mDim));
-                              std::cout<<"Fait"<<std::endl;
+                              // std::cout<<"Fait"<<std::endl;
                             }
 
                             MATH_Kernel1D* K1D = NULL;
                             if (model.compare("G") == 0) {
-                              std::cout<<"Gaussian DPP"<<std::endl;
+                              // std::cout<<"Gaussian DPP"<<std::endl;
                               mIsProj = false;
                               List par;
                               par = args["param"];
@@ -107,7 +107,7 @@ class dpp_Comb : public dpp_All {
                             // std::cout<<"In constructorof dpp_Prod: computation of eigenvalues"<<std::endl;
                             // computeEigenDir();
 
-                            std::cout<<"Construction ok."<<std::endl;
+                            // std::cout<<"Construction ok."<<std::endl;
     };
 
     NumericMatrix getEigen() {
