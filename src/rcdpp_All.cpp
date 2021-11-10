@@ -203,7 +203,7 @@ NumericMatrix dpp_All::computeSample() {
   // std::cout<< "Compute Index" << std::endl;
   // if (!mIsProj) computeIndex(k);
   int n = mIndex.size();
-  std::cout<< "Number of points to be computed " << n << std::endl;
+  // std::cout<< "Number of points to be computed " << n << std::endl;
   // print_vector(mIndex);
   int i, j, it;
 
@@ -231,7 +231,7 @@ NumericMatrix dpp_All::computeSample() {
   // }
   res(0,_) = x;
 
-  std::cout<<"Done"<<std::endl;
+  // std::cout<<"Done"<<std::endl;
   if (n == 1) return res;
 
   std::vector<int> K(mDim);                   // Element of vector index
