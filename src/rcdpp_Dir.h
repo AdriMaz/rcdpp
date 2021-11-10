@@ -19,7 +19,7 @@ class dpp_Dir : public dpp_Comb {
     };
 
     dpp_Dir(List args) : dpp_Comb(args) {
-      std::cout<<"Construction of Dir DPP"<<std::endl;
+      // std::cout<<"Construction of Dir DPP"<<std::endl;
       // mTau = (pow(mRho, 1./mDim)-1.)/2.;
       // std::cout<<"Tau = "<<mTau << std::endl;
       // mAsprod = false;
