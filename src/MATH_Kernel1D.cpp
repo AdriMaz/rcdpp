@@ -5,6 +5,9 @@
 double MATH_KernelGauss1D::computeEigen1D(const int k, double wsc) {
   double res;
   // double wsc = mWscale[i];
+  // if (k == 0) {
+  //   if (mType.compare("sum") == 0) return 0.;
+  // }
   res = mRho*sqrt(M_PI)*mAlpha*exp(-pow(k/wsc*mAlpha*M_PI,2));
   return res;
 }
@@ -28,6 +31,9 @@ std::complex<double> MATH_KernelGauss1D::computeExactKernel1D(const double x, co
 double MATH_KernelL1Exp1D::computeEigen1D(const int k, double wsc) {
   double res;
   // double wsc = mWscale[i];
+  // if (k == 0) {
+  //   if (mType.compare("sum") == 0) return 0.;
+  // }
   res = mRho*2*mAlpha/(1.+pow(2*M_PI*mAlpha*k/wsc, 2));
   return res;
 }

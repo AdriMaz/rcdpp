@@ -54,13 +54,18 @@ class dpp_Comb : public dpp_All {
     dpp_Comb(List args) : dpp_All(args),
                           mK(as<int>(args["k"]))
                            {
+                             // std::cout<<"dpp_Comb constructor"<<std::endl;
                             if (!mKernel1D) delete mKernel1D;
                             std::string s = args["type"];
+                            // std::cout<<"'type' arg read"<<std::endl;
+                            // std::cout<<"'type' = "<<s<<std::endl;
                             mType = s;
+
                             if (!mIsCube) mEigDir.resize(mDim);
                             else mEigDir.resize(1);
                             std::string model = args["model"];
-
+                            // std::cout<<"'model' arg read"<<std::endl;
+                            // std::cout<<"'model' = "<<model<<std::endl;
 
                             if (mWithKernel) {
                               // std::cout<<"Redim mEig"<<std::endl;
@@ -70,30 +75,38 @@ class dpp_Comb : public dpp_All {
 
                             MATH_Kernel1D* K1D = NULL;
                             if (model.compare("G") == 0) {
-                              // std::cout<<"Gaussian DPP"<<std::endl;
+                              // std::cout<<"Gaussian DPP constructor"<<std::endl;
                               mIsProj = false;
-                              List par;
-                              par = args["param"];
-                              double rho = as<double>(par["rho"]);
-                              if (mType.compare("prod") == 0) par["rho"] = pow(rho, 1./mDim);
-                              else if (mType.compare("sum") == 0) par["rho"] = rho/mDim;
+                              // List par;
+                              // par = args["param"];
+                              double rho = as<double>(args["rho"]);
 
-                              // std::cout<<"rho1d ="<<as<double>(par["rho"])<<std::endl;
-                              K1D = new MATH_KernelGauss1D(par);
                               // mK < 0 uniquement si calcul exact du noyau.
                               if (mK < 0) mInt = rho;
+
+                              double alpha = as<double>(args["alpha"]);
+                              if (mType.compare("prod") == 0) rho = pow(rho, 1./mDim);
+                              else if (mType.compare("sum") == 0) rho /= mDim;
+
+                              // std::cout<<"rho1d ="<<as<double>(par["rho"])<<std::endl;
+                              K1D = new MATH_KernelGauss1D(rho, alpha);
+
 
                             } else if (model.compare("L1E") == 0) {
                               mIsProj = false;
-                              List par ;
-                              par = args["param"];
-                              double rho = as<double>(par["rho"]);
-                              if (mType.compare("prod") == 0) par["rho"] = pow(rho, 1./mDim);
-                              else if (mType.compare("sum") == 0) par["rho"] = rho/mDim;
+                              // List par ;
+                              // par = args["param"];
+                              double rho = as<double>(args["rho"]);
 
-                              K1D = new MATH_KernelL1Exp1D(par);
                               // mK < 0 uniquement si calcul exact du noyau.
                               if (mK < 0) mInt = rho;
+
+                              double alpha = as<double>(args["alpha"]);
+                              if (mType.compare("prod") == 0) rho = pow(rho, 1./mDim);
+                              else if (mType.compare("sum") == 0) rho /= mDim;
+
+                              K1D = new MATH_KernelL1Exp1D(rho, alpha);
+
 
                             } else K1D = NULL;
 

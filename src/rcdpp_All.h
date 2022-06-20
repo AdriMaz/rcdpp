@@ -91,6 +91,7 @@ class dpp_All {
                             mIsCube(as<bool>(args["ic"])),
                             mWithKernel(as<bool>(args["wk"]))
                             {
+                              // std::cout<<"dpp_All constructor"<<std::endl;
                             mWscale = args["Wscale"];
                             mWcenter = args["Wcenter"];
 

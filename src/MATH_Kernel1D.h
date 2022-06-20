@@ -10,13 +10,15 @@ using namespace Rcpp;
 /* Class of 1-d kernels*/
 
 class MATH_Kernel1D {
-  // private:
-    // std::vector<double> mParams;
-
+  // protected:
+  //   // std::vector<double> mParams;
+  //   std::string mType;
 
   public:
 
   MATH_Kernel1D () {};
+
+  // MATH_Kernel1D (std::string type) : mType(type) {};
 
 
   virtual double computeEigen1D(const int k, double wsc) = 0;
@@ -40,9 +42,11 @@ class MATH_KernelGauss1D : public MATH_Kernel1D {
      };
 
 
-    MATH_KernelGauss1D(List param) : MATH_Kernel1D(),
-                          mRho(as<double>(param["rho"])),
-                          mAlpha(as<double>(param["alpha"])) {
+    MATH_KernelGauss1D(double rho, double alpha
+      // , std::string type
+                      ) : MATH_Kernel1D(),
+                          mRho(rho),
+                          mAlpha(alpha) {
                           // mAsprod = true;
                           // mIsProj = false;
                           // if (mWithKernel) mEig.resize(pow(2*mK+1, mDim));
@@ -76,9 +80,11 @@ class MATH_KernelL1Exp1D : public MATH_Kernel1D {
 
     };
 
-    MATH_KernelL1Exp1D(List param) : MATH_Kernel1D(),
-                         mRho(as<double>(param["rho"])),
-                         mAlpha(as<double>(param["alpha"])) {
+    MATH_KernelL1Exp1D(double rho, double alpha
+      // , std::string type
+                      ) : MATH_Kernel1D(),
+                         mRho(rho),
+                         mAlpha(alpha) {
       // mIsProj = false;
       // Rcout<<"computeEigenDir done\n";
     };

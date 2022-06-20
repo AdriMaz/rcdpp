@@ -22,7 +22,7 @@ Generates simulated realisations from a determinantal point process model.
  \item{nsim}{ number of simulated realisations.}
  \item{d}{ dimension of the DPP.}
  \item{param}{ list of parameters. See Details.}
- \item{type}{ Construction of the DPP. See Details. }
+ \item{type}{ Construction of the DPP (not used if \code{model} is {"Eig"}. See Details. }
  \item{model}{ Class of the DPP. See Details. }
  \item{domain}{ domain of the DPP. Must be of class \code{"ownin"}, \code{"box3"} or \code{"boxx"}.}
  \item{progress}{ if > 0, print a message each \code{progress} simulated points.}

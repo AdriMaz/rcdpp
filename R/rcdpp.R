@@ -35,14 +35,19 @@
 ###                of point configuration: K[i,j] is the kernel evaluated at
 ###                i-th and jth points.
 rdppC <- function(nsim = 1, d, param = NULL, model = c("D", "L1E", "G", "Eig"),
+                  type = c("prod", "sum"),
                   domain = boxx(rep(list(0:1), d)),
                   progress = 0, progress.sim = 0,
                   with.kernel = FALSE) {
 
-  dpp <- build(d = d, param = param, model = model, domain = domain,
+if (missing(type)) type <- "prod"
+type <- match.arg(type)
+model <- match.arg(model)
+# cat("Calling buil function \n")
+  dpp <- build(d = d, param = param, model = model, type = type, domain = domain,
               progress = progress, progress.sim = progress.sim,
               with.kernel = with.kernel, sim = TRUE)
-
+# cat("Calling cpp-simulate function \n")
   res <-  dpp$simulate(nsim)
 
   # cat("Done: convert Matrix into ppx \n")
@@ -82,7 +87,7 @@ rdppC <- function(nsim = 1, d, param = NULL, model = c("D", "L1E", "G", "Eig"),
 
 
 ####### Kernel computation
-computeKernel <- function(pp, param = NULL, model = c("D", "G", "L1E", "Eig"), domain = NULL) {
+computeKernel <- function(pp, param = NULL, model = c("D", "G", "L1E", "Eig"), type = c("prod", "sum"), domain = NULL) {
 
   if (is.ppx(pp)) {
     domain <- pp$domain
@@ -134,7 +139,7 @@ computeKernel <- function(pp, param = NULL, model = c("D", "G", "L1E", "Eig"), d
     if (any(tests[3,]) | any(tests[4,])) stop("Points of some 'pp' elements are out of 'domain'.")
   } else stop("'pp' must be a matrix, a ppp/ppx object or a list of matrices.")
 
-  dpp <- build(d = d, param = param, model = model, domain = domain,
+  dpp <- build(d = d, param = param, model = model, type = type, domain = domain,
                 progress = 0, progress.sim = 0,
                 with.kernel = TRUE, sim = FALSE)
 
@@ -149,7 +154,7 @@ computeKernel <- function(pp, param = NULL, model = c("D", "G", "L1E", "Eig"), d
 }
 
 ####### PCF computation
-computePCF <- function(pp, param = NULL, model = c("D", "G", "L1E", "Eig"), domain = NULL) {
+computePCF <- function(pp, param = NULL, model = c("D", "G", "L1E", "Eig"), type = c("prod", "sum"), domain = NULL) {
 
     if (is.ppx(pp)) {
       domain <- pp$domain
@@ -201,7 +206,7 @@ computePCF <- function(pp, param = NULL, model = c("D", "G", "L1E", "Eig"), doma
       if (any(tests[3,]) | any(tests[4,])) stop("Points of some 'pp' elements are out of 'domain'.")
     } else stop("'pp' must be a matrix, a ppp/ppx object or a list of matrices.")
 
-  dpp <- build(d = d, param = param, model = model, domain = domain,
+  dpp <- build(d = d, param = param, model = model, type = type, domain = domain,
                 progress = 0, progress.sim = 0,
                 with.kernel = TRUE, sim = FALSE)
 
@@ -218,11 +223,16 @@ computePCF <- function(pp, param = NULL, model = c("D", "G", "L1E", "Eig"), doma
 
 #### Construction modèles
 build <- function(d, param = NULL, model = c("D", "L1E", "G", "Eig"),
+                  type = c("prod", "sum"),
                   domain = boxx(rep(list(0:1), d)),
                   progress = 0, progress.sim = 0,
                   with.kernel = FALSE, sim = TRUE) {
 
+  # cat("In build function \n")
   if (d <= 0) stop("'d' must be a positive integer.")
+
+  if (missing(type)) type <- "prod"
+
   model <- match.arg(model)
 
   if (is.owin(domain)) domain <- as.boxx(domain)
@@ -275,9 +285,10 @@ build <- function(d, param = NULL, model = c("D", "L1E", "G", "Eig"),
       if (rho > (sqrt(pi)*alpha)^(-d)) stop("'G' model is not valid (see  'help(rdppC)'.")
 
       # if (length(param) > 3) stop("'G' model requires only 3 parameters ('rho' and 'alpha').")
-      args <- c(args, rho = rho, alpha = alpha, k = k)
+      args <- c(args, model = "G", type = type, rho = rho, alpha = alpha, k = k)
+      # args <- c(args, model = "G", type = type, param = param)
 
-      dpp <- new(dppGauss, args)
+      dpp <- new(dppComb, args)
     }
     ,
     'L1E' = {
@@ -304,9 +315,10 @@ build <- function(d, param = NULL, model = c("D", "L1E", "G", "Eig"),
       }
 
       if (rho > (2*alpha)^(-d)) stop("'L1E' model is not valid(see 'help(rdppC)').")
-      args <- c(args, rho = rho, alpha = alpha, k = k)
+      args <- c(args, model = "L1E", type = type, rho = rho, alpha = alpha, k = k)
+      # args <- c(args, model = "L1E", type = type, param = param)
 
-      dpp <- new(dppL1Exp, args)
+      dpp <- new(dppComb, args)
     },
     'D' = {
       if (is.null(param)) stop("'D' model requires 1 parameter ('N').")
@@ -324,7 +336,7 @@ build <- function(d, param = NULL, model = c("D", "L1E", "G", "Eig"),
         N <- c(N, rep(1, d-length(N)))
       }
       if (d > 1) args$ic <- args$ic & (sd(N) == 0)
-      args <- c(args, N = 0, k = max(N))
+      args <- c(args, model = model, type = type, N = 0, k = max(N))
       args$N <- N
       dpp <- new(dppDir, args)
     },

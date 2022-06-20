@@ -4,18 +4,28 @@ using namespace Rcpp;
 
 double dpp_Dir::methodComputationEigen (const std::vector<int>& coord, std::vector<double>& vec) {
   double res;
+  int count_nzeros = 0;
+
   if(mDim == 1) {
     select(coord, vec);
     res = vec[0];
   } else {
     if (mType.compare("prod") == 0) {
       select(coord, vec);
-      res = std::accumulate(vec.begin(), vec.end(), 1., std::multiplies<double>());    // Eigenvalue associated to coord
+      for (int i = 0; (i < mDim) & (count_nzeros < 1); ++i) {
+        if(vec[i] == 0) count_nzeros++;
+      }
+      if (count_nzeros == 0) {
+        res = 1.;
+      } else {
+        res = 0.;
+      }
+      // res = std::accumulate(vec.begin(), vec.end(), 1., std::multiplies<double>());    // Eigenvalue associated to coord
     }
 
     if (mType.compare("sum") == 0) {
       // std::cout<<"Compute eigen value (type = 'sum')"<<std::endl;
-      int count_nzeros = 0;
+      // int count_nzeros = 0;
       // int i = 0;
       int ind_nzeros;
       for (int i = 0; (i < mDim) & (count_nzeros < 2); ++i) {
@@ -32,11 +42,11 @@ double dpp_Dir::methodComputationEigen (const std::vector<int>& coord, std::vect
         res = std::accumulate(vec.begin(), vec.end(), 0.);
       } else if (count_nzeros == 1) {
         // std::cout<<"Une seule non-nulle dans la grille"<<std::endl;
-        select(coord, vec);
-        res = vec[ind_nzeros];
+        // select(coord, vec);
+        res = 1.;
       } else {
         // std::cout<<"Plus d'une valeur nonnulle dans la grille"<<std::endl;
-        res = 0;
+        res = 0.;
       }
     }
   }
